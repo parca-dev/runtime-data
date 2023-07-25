@@ -3,6 +3,12 @@ name = "runtime-data"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+rbperf = { git = "https://github.com/javierhonduco/rbperf", tag = "v0.4.0" }
+py-perf = { git = "ssh://git@github.com/kakkoyun/py-perf.git" }
+
+py-spy = { git = "ssh://git@github.com/kakkoyun/py-spy.git" }
+rbspy-ruby-structs = "0.17"
+
+memoffset = "0.8"
+serde_yaml = "0.9"

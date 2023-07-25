@@ -1,6 +1,6 @@
 # runtime-data
 
-This is a small project to calculate and expose the runtime structs of several interpreters and runtimes.
+This is a small project to calculate and expose the offsets of the runtime structs of several interpreters and runtimes.
 It heavily relies on existing open-source projects.
 
 ## Usage

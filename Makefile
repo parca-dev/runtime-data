@@ -21,13 +21,18 @@ target/release/deps/libz.a: target/static-libs
 	cp target/static-libs/libz.a target/release/deps/libz.a
 
 deps: target/debug/deps/libelf.a target/debug/deps/libz.a target/release/deps/libelf.a target/release/deps/libz.a
-	mkdir -p out/ruby_versions
-	mkdir -p out/python_versions
+
+.PHONY: dirs
+dirs:
+	mkdir -p pkg/ruby/versions
+	mkdir -p pkg/python/versions
 
 .PHONY: build
-build: target/debug/deps/libelf.a target/debug/deps/libz.a
+build: target/debug/deps/libelf.a target/debug/deps/libz.a dirs
 	@echo "Building runtime-data"
 	cargo build
+	cargo run
+	go build ./...
 
 .PHONY: release-build
 release-build: target/release/deps/libelf.a target/release/deps/libz.a
@@ -37,3 +42,8 @@ release-build: target/release/deps/libelf.a target/release/deps/libz.a
 .PHONY: clean
 clean:
 	rm -rf target
+
+.PHONY: test
+test:
+	cargo test
+	go test ./...

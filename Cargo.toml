@@ -4,11 +4,15 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rbperf = { git = "https://github.com/javierhonduco/rbperf", tag = "v0.4.0" }
-py-perf = { git = "ssh://git@github.com/kakkoyun/py-perf.git" }
-
+# py-perf = { git = "ssh://git@github.com/kakkoyun/py-perf.git" }
+py-perf = { path = "../py-perf" }
 py-spy = { git = "ssh://git@github.com/kakkoyun/py-spy.git" }
+
+rbperf = { git = "https://github.com/javierhonduco/rbperf", tag = "v0.4.0" }
 rbspy-ruby-structs = "0.17"
+
 
 memoffset = "0.8"
 serde_yaml = "0.9"
+anyhow = "1.0.75"
+serde = "1.0.188"

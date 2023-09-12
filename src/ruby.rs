@@ -12,6 +12,18 @@ use rbperf::RubyVersionOffsets;
 use std::fs::File;
 use std::io::Write;
 use std::mem::size_of;
+use std::path::Path;
+
+static OUT_DIR: &str = "pkg/ruby/versions";
+
+fn write_to_file(filename: &str, contents: RubyVersionOffsets) {
+    let yaml = serde_yaml::to_string(&contents).unwrap();
+
+    File::create(Path::new(OUT_DIR).join(filename))
+        .unwrap()
+        .write_all(yaml.as_bytes())
+        .unwrap();
+}
 
 pub fn dump_ruby_structs_ruby_2_6_0() {
     let vm_offset: i32 = offset_of!(
@@ -68,12 +80,7 @@ pub fn dump_ruby_structs_ruby_2_6_0() {
         ec_offset: 32,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_2_6_0_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_2_6_0.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_2_6_0.yaml", ruby_2_6_0_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_2_6_3() {
@@ -139,12 +146,7 @@ pub fn dump_ruby_structs_ruby_2_6_3() {
         ec_offset: 32,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_2_6_0_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_2_6_3.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_2_6_3.yaml", ruby_2_6_0_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_2_7_1() {
@@ -210,12 +212,7 @@ pub fn dump_ruby_structs_ruby_2_7_1() {
         ec_offset: 32,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_2_7_1_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_2_7_1.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_2_7_1.yaml", ruby_2_7_1_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_2_7_4() {
@@ -281,12 +278,7 @@ pub fn dump_ruby_structs_ruby_2_7_4() {
         ec_offset: 32,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_2_7_4_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_2_7_4.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_2_7_4.yaml", ruby_2_7_4_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_2_7_6() {
@@ -352,12 +344,7 @@ pub fn dump_ruby_structs_ruby_2_7_6() {
         ec_offset: 32,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_2_7_6_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_2_7_6.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_2_7_6.yaml", ruby_2_7_6_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_3_0_0() {
@@ -436,12 +423,7 @@ pub fn dump_ruby_structs_ruby_3_0_0() {
         ec_offset: 520,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_3_0_0_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_3_0_0.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_3_0_0.yaml", ruby_3_0_0_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_3_0_4() {
@@ -520,12 +502,7 @@ pub fn dump_ruby_structs_ruby_3_0_4() {
         ec_offset: 520,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_3_0_4_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_3_0_4.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_3_0_4.yaml", ruby_3_0_4_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_3_1_2() {
@@ -604,12 +581,7 @@ pub fn dump_ruby_structs_ruby_3_1_2() {
         ec_offset: 520,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_3_1_2_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_3_1_2.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_3_1_2.yaml", ruby_3_1_2_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_3_1_3() {
@@ -680,12 +652,7 @@ pub fn dump_ruby_structs_ruby_3_1_3() {
         ec_offset: 520,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_3_1_3_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_3_1_3.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_3_1_3.yaml", ruby_3_1_3_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_3_2_0() {
@@ -756,12 +723,7 @@ pub fn dump_ruby_structs_ruby_3_2_0() {
         ec_offset: 520,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_3_2_0_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_3_2_0.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_3_2_0.yaml", ruby_3_2_0_offsets);
 }
 
 pub fn dump_ruby_structs_ruby_3_2_1() {
@@ -832,10 +794,5 @@ pub fn dump_ruby_structs_ruby_3_2_1() {
         ec_offset: 520,
     };
 
-    let yaml = serde_yaml::to_string(&ruby_3_2_1_offsets).unwrap();
-
-    File::create("out/ruby_versions/ruby_3_2_1.yaml")
-        .unwrap()
-        .write_all(yaml.as_bytes())
-        .unwrap();
+    write_to_file("ruby_3_2_1.yaml", ruby_3_2_1_offsets);
 }

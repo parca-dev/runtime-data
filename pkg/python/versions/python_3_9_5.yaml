@@ -1,6 +1,6 @@
 major_version: 3
-minor_version: 6
-patch_version: 6
+minor_version: 9
+patch_version: 5
 py_object:
   ob_type: 8
 py_string:
@@ -12,7 +12,8 @@ py_thread_state:
   next: 8
   interp: 16
   frame: 24
-  thread: 152
+  thread_id: 176
+  native_thread_id: -1
   cframe: -1
 py_cframe:
   current_frame: 0
@@ -23,12 +24,12 @@ py_runtime_state:
 py_frame_object:
   f_back: 24
   f_code: 32
-  f_lineno: 124
-  f_localsplus: 376
+  f_lineno: 108
+  f_localsplus: 360
 py_code_object:
-  co_filename: 96
-  co_name: 104
-  co_varnames: 64
-  co_firstlineno: 36
+  co_filename: 104
+  co_name: 112
+  co_varnames: 72
+  co_firstlineno: 40
 py_tuple_object:
   ob_item: 24

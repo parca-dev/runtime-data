@@ -12,7 +12,8 @@ py_thread_state:
   next: 0
   interp: 8
   frame: 16
-  thread: 144
+  thread_id: 144
+  native_thread_id: -1
   cframe: -1
 py_cframe:
   current_frame: 0

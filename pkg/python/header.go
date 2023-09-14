@@ -82,8 +82,7 @@ type PyFrameObject struct {
 	FLocalsplus int64 `yaml:"f_localsplus"`
 }
 
-// PythonVersionOffsets
-type PythonVersionOffsets struct {
+type VersionOffsets struct {
 	MajorVersion       uint32             `yaml:"major_version"`
 	MinorVersion       uint32             `yaml:"minor_version"`
 	PatchVersion       uint32             `yaml:"patch_version"`
@@ -100,7 +99,7 @@ type PythonVersionOffsets struct {
 	PyTypeObject       PyTypeObject       `yaml:"py_type_object"`
 }
 
-func (pvo PythonVersionOffsets) Data() ([]byte, error) {
+func (pvo VersionOffsets) Data() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	buf.Grow(int(unsafe.Sizeof(&pvo)))
 

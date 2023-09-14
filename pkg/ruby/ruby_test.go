@@ -28,12 +28,12 @@ func TestGetVersions(t *testing.T) {
 func TestGetVersionMap(t *testing.T) {
 	tests := []struct {
 		version string
-		want    RubyVersionOffsets
+		want    VersionOffsets
 		wantErr bool
 	}{
 		{
 			version: "3.0.4",
-			want: RubyVersionOffsets{
+			want: VersionOffsets{
 				MajorVersion:        3,
 				MinorVersion:        0,
 				PatchVersion:        4,

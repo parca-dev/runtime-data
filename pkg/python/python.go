@@ -24,12 +24,12 @@ import (
 var versions embed.FS
 
 // GetVersions returns all the versions of Python that are supported.
-func GetVersions() ([]PythonVersionOffsets, error) {
+func GetVersions() ([]VersionOffsets, error) {
 	entries, err := versions.ReadDir("versions")
 	if err != nil {
 		return nil, err
 	}
-	var versions []PythonVersionOffsets
+	var versions []VersionOffsets
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -38,7 +38,7 @@ func GetVersions() ([]PythonVersionOffsets, error) {
 		if err != nil {
 			return nil, err
 		}
-		var version PythonVersionOffsets
+		var version VersionOffsets
 		err = yaml.Unmarshal(data, &version)
 		if err != nil {
 			return nil, err
@@ -49,12 +49,12 @@ func GetVersions() ([]PythonVersionOffsets, error) {
 }
 
 // GetVersionMap returns a map of Python version offsets.
-func GetVersionMap() (map[string]PythonVersionOffsets, error) {
+func GetVersionMap() (map[string]VersionOffsets, error) {
 	versions, err := GetVersions()
 	if err != nil {
 		return nil, err
 	}
-	versionMap := make(map[string]PythonVersionOffsets)
+	versionMap := make(map[string]VersionOffsets)
 	for _, pvo := range versions {
 		version := fmt.Sprintf("%d.%d.%d", pvo.MajorVersion, pvo.MinorVersion, pvo.PatchVersion)
 		versionMap[version] = pvo

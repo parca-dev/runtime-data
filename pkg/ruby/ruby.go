@@ -25,12 +25,12 @@ import (
 var versions embed.FS
 
 // GetVersions returns all the versions of Ruby that are supported.
-func GetVersions() ([]RubyVersionOffsets, error) {
+func GetVersions() ([]VersionOffsets, error) {
 	entries, err := versions.ReadDir("versions")
 	if err != nil {
 		return nil, err
 	}
-	var versions []RubyVersionOffsets
+	var versions []VersionOffsets
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -39,7 +39,7 @@ func GetVersions() ([]RubyVersionOffsets, error) {
 		if err != nil {
 			return nil, err
 		}
-		var version RubyVersionOffsets
+		var version VersionOffsets
 		err = yaml.Unmarshal(data, &version)
 		if err != nil {
 			return nil, err
@@ -50,12 +50,12 @@ func GetVersions() ([]RubyVersionOffsets, error) {
 }
 
 // GetVersionMap returns a map of Ruby version offsets.
-func GetVersionMap() (map[string]RubyVersionOffsets, error) {
+func GetVersionMap() (map[string]VersionOffsets, error) {
 	versions, err := GetVersions()
 	if err != nil {
 		return nil, err
 	}
-	versionMap := make(map[string]RubyVersionOffsets)
+	versionMap := make(map[string]VersionOffsets)
 	for _, pvo := range versions {
 		version := fmt.Sprintf("%d.%d.%d", pvo.MajorVersion, pvo.MinorVersion, pvo.PatchVersion)
 		versionMap[version] = pvo

@@ -20,7 +20,7 @@ import (
 	"github.com/parca-dev/runtime-data/pkg/byteorder"
 )
 
-type RubyVersionOffsets struct {
+type VersionOffsets struct {
 	MajorVersion        int32 `yaml:"major_version"`
 	MinorVersion        int32 `yaml:"minor_version"`
 	PatchVersion        int32 `yaml:"patch_version"`
@@ -37,7 +37,7 @@ type RubyVersionOffsets struct {
 	EcOffset            int32 `yaml:"ec_offset"`
 }
 
-func (rvo RubyVersionOffsets) Data() ([]byte, error) {
+func (rvo VersionOffsets) Data() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	buf.Grow(int(unsafe.Sizeof(&rvo)))
 

@@ -15,7 +15,6 @@ package python
 import (
 	"embed"
 	"fmt"
-	"os"
 
 	"gopkg.in/yaml.v3"
 )
@@ -29,12 +28,12 @@ func GetVersions() ([]VersionOffsets, error) {
 	if err != nil {
 		return nil, err
 	}
-	var versions []VersionOffsets
+	var offsetVersions []VersionOffsets
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
 		}
-		data, err := os.ReadFile("versions/" + entry.Name())
+		data, err := versions.ReadFile("versions/" + entry.Name())
 		if err != nil {
 			return nil, err
 		}
@@ -43,9 +42,9 @@ func GetVersions() ([]VersionOffsets, error) {
 		if err != nil {
 			return nil, err
 		}
-		versions = append(versions, version)
+		offsetVersions = append(offsetVersions, version)
 	}
-	return versions, nil
+	return offsetVersions, nil
 }
 
 // GetVersionMap returns a map of Python version offsets.

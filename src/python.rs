@@ -77,6 +77,63 @@ pub fn dump_python_structs_2_7_15() {
     write_to_file("python_2_7_15.yaml", python_2_7_15_offsets)
 }
 
+pub fn dump_python_structs_3_4_8() {
+    let python_3_4_8_offsets = PythonVersionOffsets {
+        major_version: 3,
+        minor_version: 4,
+        patch_version: 8,
+        py_object: py_perf::bindings::PyObject {
+            ob_type: offset_of!(py_spy::python_bindings::v3_4_8::PyObject, ob_type) as i64,
+        },
+        py_string: py_perf::bindings::PyString {
+            data: size_of::<py_spy::python_bindings::v3_4_8::PyASCIIObject>() as i64,
+            size: offset_of!(py_spy::python_bindings::v3_4_8::PyVarObject, ob_size) as i64,
+        },
+        py_type_object: py_perf::bindings::PyTypeObject {
+            tp_name: offset_of!(py_spy::python_bindings::v3_4_8::PyTypeObject, tp_name) as i64,
+        },
+        py_thread_state: py_perf::bindings::PyThreadState {
+            interp: offset_of!(py_spy::python_bindings::v3_4_8::PyThreadState, interp) as i64,
+            next: offset_of!(py_spy::python_bindings::v3_4_8::PyThreadState, next) as i64,
+            frame: offset_of!(py_spy::python_bindings::v3_4_8::PyThreadState, frame) as i64,
+            thread_id: offset_of!(py_spy::python_bindings::v3_4_8::PyThreadState, thread_id) as i64,
+            native_thread_id: -1,
+            cframe: -1,
+        },
+        py_cframe: py_perf::bindings::PyCFrame::default(),
+        py_interpreter_state: py_perf::bindings::PyInterpreterState {
+            tstate_head: offset_of!(
+                py_spy::python_bindings::v3_4_8::PyInterpreterState,
+                tstate_head
+            ) as i64,
+        },
+        py_runtime_state: py_perf::bindings::PyRuntimeState { interp_main: -1 },
+        py_frame_object: py_perf::bindings::PyFrameObject {
+            f_back: offset_of!(py_spy::python_bindings::v3_4_8::PyFrameObject, f_back) as i64,
+            f_code: offset_of!(py_spy::python_bindings::v3_4_8::PyFrameObject, f_code) as i64,
+            f_lineno: offset_of!(py_spy::python_bindings::v3_4_8::PyFrameObject, f_lineno) as i64,
+            f_localsplus: offset_of!(py_spy::python_bindings::v3_4_8::PyFrameObject, f_localsplus)
+                as i64,
+        },
+        py_code_object: py_perf::bindings::PyCodeObject {
+            co_filename: offset_of!(py_spy::python_bindings::v3_4_8::PyCodeObject, co_filename)
+                as i64,
+            co_name: offset_of!(py_spy::python_bindings::v3_4_8::PyCodeObject, co_name) as i64,
+            co_varnames: offset_of!(py_spy::python_bindings::v3_4_8::PyCodeObject, co_varnames)
+                as i64,
+            co_firstlineno: offset_of!(
+                py_spy::python_bindings::v3_4_8::PyCodeObject,
+                co_firstlineno
+            ) as i64,
+        },
+        py_tuple_object: py_perf::bindings::PyTupleObject {
+            ob_item: offset_of!(py_spy::python_bindings::v3_4_8::PyTupleObject, ob_item) as i64,
+        },
+    };
+
+    write_to_file("python_3_4_8.yaml", python_3_4_8_offsets)
+}
+
 pub fn dump_python_structs_3_3_7() {
     let python_3_3_7_offsets = PythonVersionOffsets {
         major_version: 3,

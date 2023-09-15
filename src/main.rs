@@ -19,10 +19,11 @@ fn main() {
     python::dump_python_structs_2_7_15();
 
     python::dump_python_structs_3_3_7();
+    python::dump_python_structs_3_4_8();
     python::dump_python_structs_3_5_5();
-
     python::dump_python_structs_3_6_6();
     python::dump_python_structs_3_7_0();
+
     python::dump_python_structs_3_8_0();
     python::dump_python_structs_3_9_5();
     python::dump_python_structs_3_10_0();

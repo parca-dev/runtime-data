@@ -14,7 +14,6 @@ package python
 
 import (
 	"embed"
-	"fmt"
 
 	"gopkg.in/yaml.v3"
 )
@@ -23,12 +22,12 @@ import (
 var versions embed.FS
 
 // GetVersions returns all the versions of Python that are supported.
-func GetVersions() ([]VersionOffsets, error) {
+func GetVersions() ([]Layout, error) {
 	entries, err := versions.ReadDir("versions")
 	if err != nil {
 		return nil, err
 	}
-	var offsetVersions []VersionOffsets
+	var offsetVersions []Layout
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -37,7 +36,7 @@ func GetVersions() ([]VersionOffsets, error) {
 		if err != nil {
 			return nil, err
 		}
-		var version VersionOffsets
+		var version Layout
 		err = yaml.Unmarshal(data, &version)
 		if err != nil {
 			return nil, err
@@ -48,14 +47,15 @@ func GetVersions() ([]VersionOffsets, error) {
 }
 
 // GetVersionMap returns a map of Python version offsets.
-func GetVersionMap() (map[string]VersionOffsets, error) {
+func GetVersionMap() (map[string]Layout, error) {
 	versions, err := GetVersions()
 	if err != nil {
 		return nil, err
 	}
-	versionMap := make(map[string]VersionOffsets)
+	versionMap := make(map[string]Layout)
 	for _, pvo := range versions {
-		version := fmt.Sprintf("%d.%d.%d", pvo.MajorVersion, pvo.MinorVersion, pvo.PatchVersion)
+		// version := fmt.Sprintf("%d.%d.%d", pvo.Version.Major, pvo.Version.Minor, pvo.Version.Patch)
+		version := "v3.11.0"
 		versionMap[version] = pvo
 	}
 	return versionMap, nil

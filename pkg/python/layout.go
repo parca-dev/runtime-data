@@ -82,11 +82,7 @@ type PyFrameObject struct {
 	FLocalsplus int64 `yaml:"f_localsplus"`
 }
 
-type VersionOffsets struct {
-	MajorVersion       uint32             `yaml:"major_version"`
-	MinorVersion       uint32             `yaml:"minor_version"`
-	PatchVersion       uint32             `yaml:"patch_version"`
-	_padding           [4]byte            // Padding for alignment.
+type Layout struct {
 	PyCFrame           PyCFrame           `yaml:"py_cframe"`
 	PyCodeObject       PyCodeObject       `yaml:"py_code_object"`
 	PyFrameObject      PyFrameObject      `yaml:"py_frame_object"`
@@ -99,7 +95,7 @@ type VersionOffsets struct {
 	PyTypeObject       PyTypeObject       `yaml:"py_type_object"`
 }
 
-func (pvo VersionOffsets) Data() ([]byte, error) {
+func (pvo Layout) Data() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	buf.Grow(int(unsafe.Sizeof(&pvo)))
 

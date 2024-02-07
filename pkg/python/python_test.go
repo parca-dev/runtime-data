@@ -28,15 +28,12 @@ func TestGetVersions(t *testing.T) {
 func TestGetVersionMap(t *testing.T) {
 	tests := []struct {
 		version string
-		want    VersionOffsets
+		want    Layout
 		wantErr bool
 	}{
 		{
 			version: "3.11.0",
-			want: VersionOffsets{
-				MajorVersion: 3,
-				MinorVersion: 11,
-				PatchVersion: 0,
+			want: Layout{
 				PyObject: PyObject{
 					ObType: 8,
 				},

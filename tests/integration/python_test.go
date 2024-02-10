@@ -1,9 +1,11 @@
+//go:build integration
+// +build integration
+
 package integration
 
 import (
 	"bytes"
 	"debug/elf"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,13 +18,6 @@ import (
 	"github.com/parca-dev/runtime-data/pkg/datamap"
 	"github.com/parca-dev/runtime-data/pkg/python"
 )
-
-var update = flag.Bool("update", false, "update golden files")
-
-func TestMain(m *testing.M) {
-	flag.Parse()
-	os.Exit(m.Run())
-}
 
 var pythonVersions = []string{
 	"2.7.15",
@@ -105,13 +100,8 @@ func TestPythonIntegration(t *testing.T) {
 
 			if diff := cmp.Diff(want, *got, cmp.AllowUnexported(python.Layout{})); diff != "" {
 				t.Errorf("input: %s, golden: %s", input, golden)
-				t.Errorf("python.GenerateDataMap(%s) mismatch (-want +got):\n%s", version, diff)
+				t.Errorf("python(%s) mismatch (-want +got):\n%s", version, diff)
 			}
 		})
 	}
-}
-
-// sanitizeIdentifier sanitizes the identifier to be used as a filename.
-func sanitizeIdentifier(identifier string) string {
-	return strings.ReplaceAll(identifier, ".", "_")
 }

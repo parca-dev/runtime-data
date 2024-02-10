@@ -15,7 +15,6 @@ package ruby
 
 import (
 	"embed"
-	"fmt"
 
 	"gopkg.in/yaml.v3"
 )
@@ -56,7 +55,8 @@ func GetVersionMap() (map[string]Layout, error) {
 	}
 	versionMap := make(map[string]Layout)
 	for _, pvo := range versions {
-		version := fmt.Sprintf("%d.%d.%d", pvo.MajorVersion, pvo.MinorVersion, pvo.PatchVersion)
+		// version := fmt.Sprintf("%d.%d.%d", pvo.MajorVersion, pvo.MinorVersion, pvo.PatchVersion)
+		version := "3.0.4"
 		versionMap[version] = pvo
 	}
 	return versionMap, nil

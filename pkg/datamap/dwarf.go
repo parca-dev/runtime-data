@@ -9,17 +9,31 @@ import (
 
 // ReadFromDWARF reads the DWARF data and extracts the offsets of the definitions.
 func (dataMap *DataMap) ReadFromDWARF(dwarfData *dwarf.Data) error {
-	namesQueriedFor := make(map[string]*Struct, len(dataMap.Structs))
-	for _, sdm := range dataMap.Structs {
-		namesQueriedFor[sdm.StructName] = sdm
-	}
-	if len(namesQueriedFor) == 0 {
-		return errors.New("no struct names provided")
-	}
+	for _, rn := range dataMap.Routes {
+		entries, err := findEntries(dwarfData, rn.Type)
+		if err != nil {
+			continue
+		}
 
-	alreadyExtracted := map[string]struct{}{}
+		entry, err := findStructType(dwarfData, entries)
+		if err != nil {
+			return fmt.Errorf("failed to find struct type (%s): %w", rn.Type, err)
+		}
+
+		if err := process(dwarfData, entry, rn); err != nil {
+			if errors.Is(err, errNoSize) {
+				continue
+			}
+			return fmt.Errorf("failed to extract: %w", err)
+		}
+	}
+	return nil
+}
+
+// findEntries finds the entries with the given name in the DWARF data.
+func findEntries(dwarfData *dwarf.Data, name string) ([]*dwarf.Entry, error) {
+	entries := []*dwarf.Entry{}
 	entryReader := dwarfData.Reader()
-	typeReader := dwarfData.Reader()
 	for {
 		entry, err := entryReader.Next()
 		if err == io.EOF || entry == nil {
@@ -27,7 +41,7 @@ func (dataMap *DataMap) ReadFromDWARF(dwarfData *dwarf.Data) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("unexpected error while reading DWARF data: %w", err)
+			return nil, fmt.Errorf("unexpected error while reading DWARF data: %w", err)
 		}
 
 		if entry.Tag != dwarf.TagStructType && entry.Tag != dwarf.TagTypedef {
@@ -35,127 +49,72 @@ func (dataMap *DataMap) ReadFromDWARF(dwarfData *dwarf.Data) error {
 		}
 
 		attributes := attrs(entry)
-		switch entry.Tag {
-		case dwarf.TagTypedef:
-			val, ok := attributes[dwarf.AttrName]
-			if !ok {
-				continue
-			}
-
-			typeName := val.(string)
-			if len(typeName) == 0 {
-				continue
-			}
-			sm, ok := namesQueriedFor[typeName]
-			if !ok {
-				continue
-			}
-			if _, ok := alreadyExtracted[typeName]; ok {
-				continue
-			}
-
-			typeAttr := attributes[dwarf.AttrType]
-			if typeAttr == nil {
-				continue
-			}
-
-			typeReader.Seek(typeAttr.(dwarf.Offset))
-			typeEntry, err := typeReader.Next()
-			if err != nil {
-				return fmt.Errorf("unexpected error while reading DWARF data: %w", err)
-			}
-
-			if typeEntry.Tag != dwarf.TagStructType {
-				return fmt.Errorf("unexpected tag, only structs are supported: %v", typeEntry.Tag)
-			}
-
-			if !typeEntry.Children {
-				continue
-			}
-
-			if err := extractFromStructEntry(typeReader, typeEntry, sm); err != nil {
-				if errors.Is(err, errNoSize) {
-					continue
-				}
-				return fmt.Errorf("failed to extract field offsets: %w", err)
-			}
-
-			alreadyExtracted[typeName] = struct{}{}
-		case dwarf.TagStructType:
-			val, ok := attributes[dwarf.AttrName]
-			if !ok {
-				continue
-			}
-
-			structName := val.(string)
-			if len(structName) == 0 {
-				continue
-			}
-			if _, ok := namesQueriedFor[structName]; !ok {
-				continue
-			}
-			if _, ok := alreadyExtracted[structName]; ok {
-				continue
-			}
-
-			sm := namesQueriedFor[structName]
-			if sm == nil {
-				return fmt.Errorf("struct %s not found", structName)
-			}
-
-			if err := extractFromStructEntry(entryReader, entry, sm); err != nil {
-				if errors.Is(err, errNoSize) {
-					continue
-				}
-				return fmt.Errorf("failed to extract field offsets: %w", err)
-			}
-
-			alreadyExtracted[structName] = struct{}{}
-		default:
+		val, ok := attributes[dwarf.AttrName]
+		if !ok {
+			continue
 		}
+
+		if val.(string) != name {
+			continue
+		}
+
+		entries = append(entries, entry)
 	}
-	return nil
+	return entries, nil
 }
 
-var errNoSize = errors.New("no size")
-
-// extractFromStructEntry handles the extraction of the offset or size of the struct.
-func extractFromStructEntry(entryReader *dwarf.Reader, entry *dwarf.Entry, sm *Struct) error {
-	structName := sm.StructName
-	attributes := attrs(entry)
-
-	sizeAttr, ok := attributes[dwarf.AttrByteSize]
-	if !ok {
-		return errNoSize
-	}
-	size := sizeAttr.(int64)
-	if size == 0 && entry.Children {
-		entryReader.SkipChildren()
-		return nil
-	}
-
-	switch sm.Op {
-	case OpOffset:
-		if err := extractStructFieldOffsets(entryReader, entry, sm); err != nil {
-			return fmt.Errorf("failed to extract field offsets: %w", err)
+// findStructType finds the struct type in the given entries.
+func findStructType(dwarfData *dwarf.Data, entries []*dwarf.Entry) (*dwarf.Entry, error) {
+	for _, entry := range entries {
+		if entry.Tag == dwarf.TagStructType {
+			if !entry.Children {
+				continue
+			}
+			return entry, nil
 		}
-	case OpSize:
-		if sm.Value.CanSet() {
-			sm.Value.SetInt(size)
-		} else {
-			return fmt.Errorf("size of struct %s is not settable", structName)
+
+		typeEntry, err := typeOf(dwarfData, entry)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get type: %w", err)
 		}
+
+		if typeEntry.Tag != dwarf.TagStructType {
+			continue
+		}
+
+		if !typeEntry.Children {
+			continue
+		}
+
+		return typeEntry, nil
 	}
-	return nil
+	return nil, errors.New("no struct type found")
 }
 
-// extractStructFieldOffsets extracts the field offsets from the DWARF struct type entry.
-func extractStructFieldOffsets(entryReader *dwarf.Reader, entry *dwarf.Entry, sdm *Struct) error {
-	namesQueriedFor := make(map[string]*Field, len(sdm.Fields))
-	for _, f := range sdm.Fields {
-		namesQueriedFor[f.Name] = f
+// process processes the given node in the route using the DWARF data.
+func process(dwarfData *dwarf.Data, entry *dwarf.Entry, rn *RouteNode) error {
+	if rn.IsLeaf() {
+		// We are at the end of the path,
+		// and we have the type we need to extract the data.
+		return processLeaf(dwarfData, entry, rn, 0)
 	}
 
+	// offset, err := offsetOf(dwarfData, entry, rn.Next.Type)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to get offset of field (%s): %w", rn.Next.Type, err)
+	// }
+	return processNested(dwarfData, entry, rn.Next, 0)
+}
+
+var errNotFound = errors.New("not found")
+
+// processNested finds the nested struct in the given struct.
+func processNested(dwarfData *dwarf.Data, entry *dwarf.Entry, rn *RouteNode, offset int64) error {
+	// entry is the struct we are inside.
+	// rn is the struct we are looking for inside the entry.
+	name := rn.Type
+	entryReader := dwarfData.Reader()
+	entryReader.Seek(entry.Offset)
 	for {
 		entry, err := entryReader.Next()
 		if err != nil {
@@ -171,33 +130,149 @@ func extractStructFieldOffsets(entryReader *dwarf.Reader, entry *dwarf.Entry, sd
 			break
 		}
 
-		if entry.Tag != dwarf.TagMember {
-			panic("unexpected tag")
-		}
-
 		attributes := attrs(entry)
-		offsetAttr, ok := attributes[dwarf.AttrName]
+		nameAttr, ok := attributes[dwarf.AttrName]
 		if !ok {
 			continue
 		}
-		fieldName := offsetAttr.(string)
+
+		fieldName := nameAttr.(string)
 		if len(fieldName) == 0 {
 			continue
 		}
-		field, ok := namesQueriedFor[fieldName]
+
+		if fieldName != name {
+			continue
+		}
+
+		// Found. Now jump to the type and process it.
+
+		typeAttr, ok := attributes[dwarf.AttrType]
 		if !ok {
 			continue
 		}
 
-		offsetAttr, ok = attributes[dwarf.AttrDataMemberLoc]
+		typeReader := dwarfData.Reader()
+		typeReader.Seek(typeAttr.(dwarf.Offset))
+		typeEntry, err := typeReader.Next()
+		if err != nil {
+			return err
+		}
+
+		if !typeEntry.Children {
+			continue
+		}
+
+		offsetAttr, ok := attributes[dwarf.AttrDataMemberLoc]
+		if !ok {
+			return fmt.Errorf("no offset attribute for %s", name)
+		}
+		offset = offset + offsetAttr.(int64)
+
+		if rn.IsLeaf() {
+			// We are at the end of the path,
+			// and we have the type we need to extract the data.
+			return processLeaf(dwarfData, typeEntry, rn, offset)
+		} else {
+			return processNested(dwarfData, typeEntry, rn.Next, offset)
+		}
+	}
+
+	return errNotFound
+}
+
+var errNoSize = errors.New("no size")
+
+// processLeaf handles the extraction of the offset or size of the struct fields at the leaf level.
+func processLeaf(dwarfData *dwarf.Data, entry *dwarf.Entry, rn *RouteNode, offset int64) error {
+	fieldSourcesQueriedFor := map[string]*Extractor{}
+	typeSourcesQueriedFor := map[string]*Extractor{}
+	for _, f := range rn.Extractors {
+		if f.Source == rn.Type {
+			typeSourcesQueriedFor[f.Source] = f
+		} else {
+			fieldSourcesQueriedFor[f.Source] = f
+		}
+	}
+
+	// Process type extractors.
+	for _, ext := range typeSourcesQueriedFor {
+		if ext.Op != OpSizeOf {
+			// We only support sizeof for types.
+			continue
+		}
+
+		size, err := sizeOf(dwarfData, entry)
+		if err != nil {
+			return fmt.Errorf("failed to get size: %w", err)
+		}
+
+		if err := ext.Set(size); err != nil {
+			return fmt.Errorf("failed to set size: %w", err)
+		}
+	}
+
+	attributes := attrs(entry)
+	sizeAttr, ok := attributes[dwarf.AttrByteSize]
+	if !ok {
+		return errNoSize
+	}
+	size := sizeAttr.(int64)
+	if size == 0 && !entry.Children {
+		// Skip children if the size is 0.
+		return nil
+	}
+
+	// Read the fields of the struct.
+	entryReader := dwarfData.Reader()
+	entryReader.Seek(entry.Offset)
+	for {
+		entry, err := entryReader.Next()
+		if err != nil {
+			return err
+		}
+
+		if err == io.EOF || entry == nil {
+			break
+		}
+
+		if entry.Tag == 0 {
+			// End of children.
+			break
+		}
+
+		attributes := attrs(entry)
+		nameAttr, ok := attributes[dwarf.AttrName]
 		if !ok {
 			continue
 		}
-		offset := offsetAttr.(int64)
-		if field.Value.CanSet() {
-			field.Value.SetInt(offset)
-		} else {
-			return fmt.Errorf("field %s is not settable", fieldName)
+		fieldName := nameAttr.(string)
+		if len(fieldName) == 0 {
+			continue
+		}
+		field, ok := fieldSourcesQueriedFor[fieldName]
+		if !ok {
+			continue
+		}
+
+		switch field.Op {
+		case OpOffsetOf:
+			offsetAttr, ok := attributes[dwarf.AttrDataMemberLoc]
+			if !ok {
+				continue
+			}
+			offset := offsetAttr.(int64) + offset
+			if err := field.Set(offset); err != nil {
+				return fmt.Errorf("failed to set offset: %w", err)
+			}
+		case OpSizeOf:
+			size, err := sizeOf(dwarfData, entry)
+			if err != nil {
+				return fmt.Errorf("failed to get size: %w", err)
+			}
+			if err := field.Set(size); err != nil {
+				return fmt.Errorf("failed to set size: %w", err)
+			}
 		}
 	}
 	return nil
@@ -214,4 +289,76 @@ func attrs(entry *dwarf.Entry) map[dwarf.Attr]any {
 		attrs[entry.Field[f].Attr] = entry.Field[f].Val
 	}
 	return attrs
+}
+
+func typeOf(dwarfData *dwarf.Data, entry *dwarf.Entry) (*dwarf.Entry, error) {
+	attrs := attrs(entry)
+	typeAttr, ok := attrs[dwarf.AttrType]
+	if !ok {
+		return nil, errors.New("no type attribute")
+	}
+	typeReader := dwarfData.Reader()
+	typeReader.Seek(typeAttr.(dwarf.Offset))
+	typeEntry, err := typeReader.Next()
+	if err != nil {
+		return nil, fmt.Errorf("unexpected error while reading DWARF data: %w", err)
+	}
+	return typeEntry, nil
+}
+
+func sizeOf(dwarfData *dwarf.Data, entry *dwarf.Entry) (int64, error) {
+	attrs := attrs(entry)
+	sizeAttr, ok := attrs[dwarf.AttrByteSize]
+	if ok {
+		return sizeAttr.(int64), nil
+	}
+
+	typeEntry, err := typeOf(dwarfData, entry)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get type: %w", err)
+	}
+
+	return sizeOf(dwarfData, typeEntry)
+}
+
+func offsetOf(dwarfData *dwarf.Data, entry *dwarf.Entry, name string) (int64, error) {
+	entryReader := dwarfData.Reader()
+	entryReader.Seek(entry.Offset)
+	for {
+		entry, err := entryReader.Next()
+		if err != nil {
+			return 0, err
+		}
+
+		if err == io.EOF || entry == nil {
+			break
+		}
+
+		if entry.Tag == 0 {
+			// End of children.
+			break
+		}
+
+		attributes := attrs(entry)
+		nameAttr, ok := attributes[dwarf.AttrName]
+		if !ok {
+			continue
+		}
+
+		fieldName := nameAttr.(string)
+		if len(fieldName) == 0 {
+			continue
+		}
+
+		if fieldName != name {
+			continue
+		}
+
+		offsetAttr, ok := attributes[dwarf.AttrDataMemberLoc]
+		if !ok {
+			return 0, errors.New("no offset attribute")
+		}
+		return offsetAttr.(int64), nil
+	}
+	return 0, errNotFound
 }

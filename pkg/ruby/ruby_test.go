@@ -34,9 +34,6 @@ func TestGetVersionMap(t *testing.T) {
 		{
 			version: "3.0.4",
 			want: Layout{
-				MajorVersion:        3,
-				MinorVersion:        0,
-				PatchVersion:        4,
 				VMOffset:            0,
 				VMSizeOffset:        8,
 				ControlFrameSizeof:  56,

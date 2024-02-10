@@ -21,20 +21,17 @@ import (
 )
 
 type Layout struct {
-	MajorVersion        int32 `yaml:"major_version"`
-	MinorVersion        int32 `yaml:"minor_version"`
-	PatchVersion        int32 `yaml:"patch_version"`
-	VMOffset            int32 `yaml:"vm_offset"`
-	VMSizeOffset        int32 `yaml:"vm_size_offset"`
-	ControlFrameSizeof  int32 `yaml:"control_frame_t_sizeof"`
-	CfpOffset           int32 `yaml:"cfp_offset"`
-	LabelOffset         int32 `yaml:"label_offset"`
-	PathFlavour         int32 `yaml:"path_flavour"`
-	LineInfoSizeOffset  int32 `yaml:"line_info_size_offset"`
-	LineInfoTableOffset int32 `yaml:"line_info_table_offset"`
-	LinenoOffset        int32 `yaml:"lineno_offset"`
-	MainThreadOffset    int32 `yaml:"main_thread_offset"`
-	EcOffset            int32 `yaml:"ec_offset"`
+	VMOffset            int64 `yaml:"vm_offset"`
+	VMSizeOffset        int64 `yaml:"vm_size_offset"`
+	ControlFrameSizeof  int64 `yaml:"control_frame_t_sizeof"`
+	CfpOffset           int64 `yaml:"cfp_offset"`
+	LabelOffset         int64 `yaml:"label_offset"`
+	PathFlavour         int64 `yaml:"path_flavour"`
+	LineInfoSizeOffset  int64 `yaml:"line_info_size_offset"`
+	LineInfoTableOffset int64 `yaml:"line_info_table_offset"`
+	LinenoOffset        int64 `yaml:"lineno_offset"`
+	MainThreadOffset    int64 `yaml:"main_thread_offset"`
+	EcOffset            int64 `yaml:"ec_offset"`
 }
 
 func (rvo Layout) Data() ([]byte, error) {

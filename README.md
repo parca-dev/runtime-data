@@ -1,16 +1,85 @@
 # runtime-data
 
-This is a small project to calculate and expose the offsets of the runtime structs of several interpreters and runtimes.
+This project is a collection of tools to extract runtime data from several interpreters and runtimes.
+By runtime data, we mean information about the execution of a program, especially stack unwinding and profiling.
 
 ## Usage
 
+### Python
+
+```go
+package python
+
+import (
+    "fmt"
+
+    "github.com/parca-dev/runtime-data/pkg/python"
+)
+
+func main() {
+    versions, err := python.GetVersions()
+    if err != nil {
+        return fmt.Errorf("get python versions: %w", err)
+    }
+
+    fmt.Println(versions)
+}
 ```
+
+### Ruby
+
+```go
+package ruby
+
+import (
+    "fmt"
+
+    "github.com/parca-dev/runtime-data/pkg/ruby"
+)
+
+func main() {
+    versions, err := ruby.GetVersions()
+    if err != nil {
+        return fmt.Errorf("get ruby versions: %w", err)
+    }
+
+    fmt.Println(versions)
+}
+```
+
+## Tools
+
+Under the `cmd` directory, you can find the following tools:
+
+**structlayout**: Extracts the memory layout using the given map (a struct annotated with certain struct tags).
+
+### structlayout
+
+[embedmd]:# (tmp/structlayout-help.txt)
+```txt
+usage: structlayout [flags] <path-to-elf>
+e.g: structlayout -m python -v 3.9.5 /usr/bin/python3.9
+
+flags:
+  -r string
+    	name of the pre-defined runtime, e.g. python, ruby, libc (shorthand)
+  -runtime string
+    	name of the pre-defined runtime, e.g. python, ruby, libc
+  -v string
+    	version of the runtime that the layout to generate, e.g. 3.9.5 (shorthand)
+  -version string
+    	version of the runtime that the layout to generate, e.g. 3.9.5
+```
+
+## Build
+
+To build the project, you can use the `Makefile`:
+
+```shell
 make build
 ```
 
-Check the `out` directory for the generated files.
-
-## Supported version
+## Supported runtimes and versions
 
 ### Python
 

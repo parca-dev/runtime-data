@@ -45,3 +45,15 @@ format: tagalign
 .PHONY: tagalign
 tagalign:
 	go run github.com/4meepo/tagalign/cmd/tagalign@latest -fix -sort ./...
+
+TMPDIR := ./tmp
+$(TMPDIR):
+	mkdir -p $(TMPDIR)
+
+$(TMPDIR)/structlayout-help.txt: $(TMPDIR) ./cmd/structlayout/structlayout.go
+	mkdir -p ./tmp
+	go run ./cmd/structlayout/structlayout.go -h > $@ 2>&1
+
+.PHONY: README.md
+README.md: $(TMPDIR)/structlayout-help.txt
+	go run github.com/campoy/embedmd/v2@latest -w README.md

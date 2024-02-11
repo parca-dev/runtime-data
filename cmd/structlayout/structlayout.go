@@ -35,7 +35,7 @@ func main() {
 	fSet.StringVar(&version, "v", "", "version of the runtime that the layout to generate, e.g. 3.9.5 (shorthand)")
 
 	fSet.Usage = func() {
-		fmt.Printf("fsage: structlayout [flags] <path-to-elf>\n")
+		fmt.Printf("usage: structlayout [flags] <path-to-elf>\n")
 		fmt.Printf("e.g: structlayout -m python -v 3.9.5 /usr/bin/python3.9\n\n")
 		fmt.Println("flags:")
 		fSet.PrintDefaults()

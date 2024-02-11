@@ -19,6 +19,8 @@ import (
 	"github.com/parca-dev/runtime-data/pkg/python"
 )
 
+const TargetDirPython = "binaries/python"
+
 var pythonVersions = []string{
 	"2.7.15",
 	"3.3.7",
@@ -51,7 +53,7 @@ func TestPythonIntegration(t *testing.T) {
 			}
 
 			parts := strings.Split(version, ".")
-			matches, err := filepath.Glob(fmt.Sprintf("tmp/libpython%s.%s*.so.1.0", parts[0], parts[1]))
+			matches, err := filepath.Glob(fmt.Sprintf("%s/libpython%s.%s*.so.1.0", TargetDirPython, parts[0], parts[1]))
 			if err != nil {
 				t.Fatalf("filepath.Glob() = %v", err)
 			}

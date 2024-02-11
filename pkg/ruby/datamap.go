@@ -10,7 +10,7 @@ import (
 func DataMapForVersion(v string) runtimedata.LayoutMap {
 	// Keys are version constraints defined in semver format,
 	// check github.com/Masterminds/semver for more details.
-	var rubyVersions = map[*semver.Constraints]runtimedata.LayoutMap{
+	rubyVersions := map[*semver.Constraints]runtimedata.LayoutMap{
 		version.MustParseConstraints("2.6.x - 2.7.x"): &ruby26_27{},
 		version.MustParseConstraints("3.x"):           &ruby30{},
 	}

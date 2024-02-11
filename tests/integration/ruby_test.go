@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package integration
 
 import (
@@ -13,6 +16,8 @@ import (
 	"github.com/parca-dev/runtime-data/pkg/ruby"
 	"gopkg.in/yaml.v3"
 )
+
+const TargetDirRuby = "binaries/ruby"
 
 var rubyVersions = []string{
 	"2.6.0",
@@ -46,7 +51,7 @@ func TestRubyIntegration(t *testing.T) {
 				t.Fatalf("ruby.GenerateDataMap(%s) = %v", version, err)
 			}
 
-			input := fmt.Sprintf("tmp/libruby.so.%s", version)
+			input := fmt.Sprintf("%s/libruby.so.%s", TargetDirRuby, version)
 
 			f, err := elf.Open(input)
 			if err != nil {

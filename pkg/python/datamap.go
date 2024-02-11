@@ -12,7 +12,7 @@ const doesNotExist = -1
 func DataMapForVersion(v string) runtimedata.LayoutMap {
 	// Keys are version constraints defined in semver format,
 	// check github.com/Masterminds/semver for more details.
-	var pythonVersions = map[*semver.Constraints]runtimedata.LayoutMap{
+	pythonVersions := map[*semver.Constraints]runtimedata.LayoutMap{
 		version.MustParseConstraints("2.7.x"):         &python27{},
 		version.MustParseConstraints("3.3.x - 3.9.x"): &python33_39{},
 		version.MustParseConstraints("3.10.x"):        &python310{},

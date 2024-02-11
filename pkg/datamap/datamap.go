@@ -163,7 +163,8 @@ func readRoutesFromMapStruct(st reflect.Type, sv reflect.Value) ([]*RouteNode, e
 		add     = func(path string, name string, op Operation, fieldValue reflect.Value) {
 			if r, exists := groupBy[path]; exists {
 				r.Leaf().Extractors = append(r.Leaf().Extractors, &Extractor{
-					Source: name, Op: op, targetValue: &fieldValue},
+					Source: name, Op: op, targetValue: &fieldValue,
+				},
 				)
 				return
 			}
@@ -211,8 +212,8 @@ func readRoutesFromMapStruct(st reflect.Type, sv reflect.Value) ([]*RouteNode, e
 
 		// Separate the field name from the path.
 		var (
-			path      = ""
-			fieldName = ""
+			path      string
+			fieldName string
 		)
 		if len(parts) == 1 {
 			path = tagValue

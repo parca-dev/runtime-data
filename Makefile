@@ -1,3 +1,8 @@
+bootstrap:
+	# Check CONTRIBUTING.md for the required dependencies
+	curl -fsSL https://get.jetpack.io/devbox | bash
+	curl -sfL https://direnv.net/install.sh | bash
+
 .PHONY: dirs
 dirs:
 	mkdir -p pkg/ruby/versions
@@ -39,7 +44,7 @@ fix:
 	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --fix
 
 .PHONY: format
-format: tagalign
+format:
 	go run mvdan.cc/gofumpt@latest -l -w .
 
 .PHONY: tagalign
@@ -57,3 +62,4 @@ $(TMPDIR)/structlayout-help.txt: $(TMPDIR) ./cmd/structlayout/structlayout.go
 .PHONY: README.md
 README.md: $(TMPDIR)/structlayout-help.txt
 	go run github.com/campoy/embedmd/v2@latest -w README.md
+	devbox generate readme CONTRIBUTING.md

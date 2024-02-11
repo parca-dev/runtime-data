@@ -71,14 +71,6 @@ flags:
     	version of the runtime that the layout to generate, e.g. 3.9.5
 ```
 
-## Build
-
-To build the project, you can use the `Makefile`:
-
-```shell
-make build
-```
-
 ## Supported runtimes and versions
 
 ### Python
@@ -101,4 +93,4 @@ make build
 
 ## License
 
-Apache 2
+[Apache 2.0](LICENSE)

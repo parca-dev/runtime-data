@@ -17,6 +17,7 @@
 # This script helps to download ruby runtimes using container images.
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}
+TARGET_DIR=${TARGET_DIR:-tests/integration/binaries/ruby}
 
 ruby_versions=(
     2.6.0
@@ -40,11 +41,18 @@ fi
 
 # Install libpython for each ruby version under python_runtimes directory.
 for ruby_version in "${ruby_versions[@]}"; do
+    echo "Checking if ruby ${ruby_version} runtime is already downloaded..."
+    if ls "${PWD}"/"${TARGET_DIR}"/libruby.so.${ruby_version} 1> /dev/null 2>&1; then
+        echo "Ruby ${ruby_version} runtime is already downloaded."
+        continue
+    fi
     echo "Downloading ruby ${ruby_version} runtime..."
-    "${CONTAINER_RUNTIME}" run --rm -v "${PWD}"/tests/integration/tmp:/tmp -w /tmp ruby:${ruby_version}-slim cp /usr/local/lib/libruby.so.${ruby_version} /tmp
+    "${CONTAINER_RUNTIME}" run --rm -v "${PWD}"/"${TARGET_DIR}":/tmp -w /tmp ruby:${ruby_version}-slim cp /usr/local/lib/libruby.so.${ruby_version} /tmp
+    echo "Changing the owner of the file to the current user..."
+    sudo chown -R $(whoami) "${TARGET_DIR}"
     echo "Done."
 done
 
 echo "All ruby runtimes downloaded successfully."
 
-for i in tests/integration/tmp/libruby*; do file "$i"; done
+for i in "${TARGET_DIR}"/libruby*; do file "$i"; done

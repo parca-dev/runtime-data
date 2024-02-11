@@ -13,30 +13,91 @@
 package python
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/Masterminds/semver/v3"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestGetVersions(t *testing.T) {
-	versions, err := GetVersions()
+	versions, err := loadVersionLayouts()
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(versions)
 }
 
-func TestGetVersionMap(t *testing.T) {
-	// TODO(kakkoyun): Add more versions to the test.
-	t.Skip("skipping test")
-
+func TestGetLayout(t *testing.T) {
 	tests := []struct {
 		version string
-		want    Layout
+		want    *Layout
 		wantErr bool
 	}{
 		{
+			version: "2.7.15",
+			want: &Layout{
+				PyCodeObject: PyCodeObject{
+					CoFilename:    80,
+					CoName:        88,
+					CoVarnames:    56,
+					CoFirstlineno: 96},
+				PyFrameObject: PyFrameObject{
+					FBack:       24,
+					FCode:       32,
+					FLineno:     124,
+					FLocalsplus: 376},
+				PyInterpreterState: PyInterpreterState{TStateHead: 8},
+				PyObject:           PyObject{ObType: 8},
+				PyRuntimeState:     PyRuntimeState{InterpMain: -1},
+				PyString:           PyString{Data: 36, Size: 16},
+				PyThreadState: PyThreadState{
+					Interp:         8,
+					Frame:          16,
+					ThreadID:       144,
+					NativeThreadID: -1,
+					CFrame:         -1,
+				},
+				PyTupleObject: PyTupleObject{ObItem: 24},
+				PyTypeObject:  PyTypeObject{TPName: 24},
+			},
+		},
+		{
+			version: "3.6.6",
+			want: &Layout{
+				PyCodeObject: PyCodeObject{
+					CoFilename:    96,
+					CoName:        104,
+					CoVarnames:    64,
+					CoFirstlineno: 36,
+				},
+				PyFrameObject: PyFrameObject{
+					FBack:       24,
+					FCode:       32,
+					FLineno:     124,
+					FLocalsplus: 376,
+				},
+				PyInterpreterState: PyInterpreterState{TStateHead: 8},
+				PyObject:           PyObject{ObType: 8},
+				PyRuntimeState:     PyRuntimeState{InterpMain: -1},
+				PyString: PyString{
+					Data: 48,
+					Size: 16,
+				},
+				PyThreadState: PyThreadState{
+					Next:           8,
+					Interp:         16,
+					Frame:          24,
+					ThreadID:       152,
+					NativeThreadID: -1,
+					CFrame:         -1,
+				},
+				PyTupleObject: PyTupleObject{ObItem: 24},
+				PyTypeObject:  PyTypeObject{TPName: 24},
+			},
+		},
+		{
 			version: "3.11.0",
-			want: Layout{
+			want: &Layout{
 				PyObject: PyObject{
 					ObType: 8,
 				},
@@ -84,14 +145,18 @@ func TestGetVersionMap(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.version, func(t *testing.T) {
-			m, err := GetVersionMap()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetVersionMap() error = %v, wantErr %v", err, tt.wantErr)
+			version, err := semver.StrictNewVersion(tt.version)
+			if err != nil {
+				t.Errorf("StrictNewVersion() error = %v", err)
 				return
 			}
-			got := m[tt.version]
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetVersionMap() = %v, want %v", got, tt.want)
+			_, got, err := GetLayout(version)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetLayout() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(Layout{})); diff != "" {
+				t.Errorf("GetLayout() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}

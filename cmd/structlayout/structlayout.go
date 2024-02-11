@@ -26,13 +26,16 @@ func main() {
 
 	fSet := flag.NewFlagSet("structlayout", flag.ExitOnError)
 	var (
-		runtime string
-		version string
+		runtime        string
+		version        string
+		givenOutputDir string
 	)
 	fSet.StringVar(&runtime, "runtime", "", "name of the pre-defined runtime, e.g. python, ruby, libc")
 	fSet.StringVar(&runtime, "r", "", "name of the pre-defined runtime, e.g. python, ruby, libc (shorthand)")
 	fSet.StringVar(&version, "version", "", "version of the runtime that the layout to generate, e.g. 3.9.5")
 	fSet.StringVar(&version, "v", "", "version of the runtime that the layout to generate, e.g. 3.9.5 (shorthand)")
+	fSet.StringVar(&givenOutputDir, "output", "", "output directory to write the layout file")
+	fSet.StringVar(&givenOutputDir, "o", "", "output directory to write the layout file (shorthand)")
 
 	fSet.Usage = func() {
 		fmt.Printf("usage: structlayout [flags] <path-to-elf>\n")
@@ -51,75 +54,91 @@ func main() {
 
 	var (
 		layoutMap runtimedata.LayoutMap
-		outputDir string
+		outputDir = givenOutputDir
 	)
 	switch runtime {
 	case "python":
 		layoutMap = python.DataMapForVersion(version)
-		outputDir = "pkg/python/versions"
+		if outputDir == "" {
+			outputDir = "pkg/python/versions"
+		}
 	case "ruby":
 		layoutMap = ruby.DataMapForVersion(version)
-		outputDir = "pkg/ruby/versions"
-	// case "libc":
-	// 	// TODO(kakkoyun): Change depending on the libc implementation. e.g musl, glibc, etc.
-	// 	layoutMap = libc.DataMapForVersion(version)
-	// 	outputDir = "pkg/libc"
+		if outputDir == "" {
+			outputDir = "pkg/ruby/versions"
+		}
+	case "libc":
+		// TODO(kakkoyun): Change depending on the libc implementation. e.g musl, glibc, etc.
+		// layoutMap = libc.DataMapForVersion(version)
+		// if outputDir == "" {
+		// 	outputDir = "pkg/libc/versions"
+		// }
 	default:
 		logger.Error("invalid offset map module", "mod", runtime)
 		os.Exit(1)
 	}
+
 	if layoutMap == nil {
 		logger.Error("unknown version", "version", version)
 		os.Exit(1)
 	}
 
-	dm, err := datamap.New(layoutMap)
-	if err != nil {
-		logger.Error("failed to generate query", "err", err)
+	var (
+		input  = fSet.Arg(0)
+		output = filepath.Join(outputDir, fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
+	)
+	if err := processAndWriteLayout(input, output, version, layoutMap); err != nil {
+		logger.Error("failed to write layout", "err", err)
 		os.Exit(1)
 	}
 
-	input := fSet.Arg(0)
+	logger.Info("layout written to file", "file", output)
+}
+
+// processAndWriteLayout processes the given ELF file and writes the layout to the given output file.
+func processAndWriteLayout(input, output string, version string, layoutMap runtimedata.LayoutMap) error {
 	ef, err := elf.Open(input)
 	if err != nil {
-		logger.Error("failed to open ELF file", "path", input, "err", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to open ELF file: %w", err)
 	}
 	defer ef.Close()
 
 	dwarfData, err := ef.DWARF()
 	if err != nil {
-		logger.Error("failed to read DWARF info", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to read DWARF info: %w", err)
+	}
+
+	dm, err := datamap.New(layoutMap)
+	if err != nil {
+		return fmt.Errorf("failed to create data map: %w", err)
 	}
 
 	if err := dm.ReadFromDWARF(dwarfData); err != nil {
-		logger.Error("failed to read DWARF data", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to extract struct layout from DWARF data: %w", err)
 	}
-
-	output := filepath.Join(outputDir, fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
 
 	file, err := os.Create(output)
 	if err != nil {
-		logger.Error("failed to create output file", "path", output, "err", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to create output file: %w", err)
+	}
+
+	withVersion, err := runtimedata.WithVersion(version, layoutMap.Layout())
+	if err != nil {
+		return fmt.Errorf("failed to wrap layout with version: %w", err)
 	}
 
 	encoder := yaml.NewEncoder(file)
-	if err := encoder.Encode(layoutMap.Layout()); err != nil {
-		logger.Error("failed to encode layout", "err", err)
-		os.Exit(1)
+	if err := encoder.Encode(withVersion); err != nil {
+		return fmt.Errorf("failed to encode layout: %w", err)
 	}
 	if err := encoder.Close(); err != nil {
-		logger.Error("failed to close encoder", "err", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to close encoder: %w", err)
 	}
 
-	logger.Info("offsets written to file", "path", output)
+	return nil
 }
 
 // sanitizeIdentifier sanitizes the identifier to be used as a filename.
 func sanitizeIdentifier(identifier string) string {
-	return strings.ReplaceAll(identifier, ".", "_")
+	return strings.TrimPrefix(strings.ReplaceAll(identifier, ".", "_"), "v")
 }

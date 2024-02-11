@@ -8,9 +8,16 @@ dirs:
 	mkdir -p pkg/ruby/versions
 	mkdir -p pkg/python/versions
 
+structlayout: cmd/structlayout/structlayout.go
+	go build -o $@ $<
+
+mergelayout: cmd/mergelayout/mergelayout.go
+	go build -o $@ $<
+
 .PHONY: build
-build: dirs
+build: dirs structlayout mergelayout
 	go build ./...
+
 
 .PHONY: clean
 clean:
@@ -59,7 +66,10 @@ $(TMPDIR)/structlayout-help.txt: $(TMPDIR) ./cmd/structlayout/structlayout.go
 	mkdir -p ./tmp
 	go run ./cmd/structlayout/structlayout.go -h > $@ 2>&1
 
+$(TMPDIR)/mergelayout-help.txt: $(TMPDIR) ./cmd/mergelayout/mergelayout.go
+	go run ./cmd/mergelayout/mergelayout.go -h >> $@ 2>&1
+
 .PHONY: README.md
-README.md: $(TMPDIR)/structlayout-help.txt
+README.md: $(TMPDIR)/structlayout-help.txt $(TMPDIR)/mergelayout-help.txt
 	go run github.com/campoy/embedmd/v2@latest -w README.md
 	devbox generate readme CONTRIBUTING.md

@@ -2,10 +2,10 @@ name: Integration Tests
 
 on:
   workflow_call:
-  workflow_run:
-    workflows: ["Test"]
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: ["Test"]
+  #   types:
+  #     - completed
   push:
     branches:
       - main
@@ -41,17 +41,17 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Download Ruby Runtimes
-        run: ./scripts/download_ruby_runtimes_using_containers.sh
+        run: ./scripts/download/ruby.sh
 
       - name: Download Python Runtimes
-        run: ./scripts/download_python_runtimes_using_containers.sh
+        run: ./scripts/download/python.sh
 
       - name: Set up cache for test runtimes
         uses: actions/cache@v3.3.2
         with:
           path: |
             ./tests/integration/binaries
-          key: ${{ runner.arch }}-integration-runtimes-${{ hashFiles('scripts/download_*.sh') }}
+          key: ${{ runner.arch }}-integration-runtimes-${{ hashFiles('scripts/download/*.sh') }}
 
       - name: Run integration tests
         run: make test/integration

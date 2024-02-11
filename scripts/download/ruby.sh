@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# This script helps to download ruby runtimes using container images.
+# This script helps to download ruby runtimes using container images for integration tests.
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}
 TARGET_DIR=${TARGET_DIR:-tests/integration/binaries/ruby}
@@ -42,7 +42,7 @@ fi
 # Install libpython for each ruby version under python_runtimes directory.
 for ruby_version in "${ruby_versions[@]}"; do
     echo "Checking if ruby ${ruby_version} runtime is already downloaded..."
-    if ls "${PWD}"/"${TARGET_DIR}"/libruby.so.${ruby_version} 1> /dev/null 2>&1; then
+    if ls "${PWD}"/"${TARGET_DIR}"/libruby.so.${ruby_version} 1>/dev/null 2>&1; then
         echo "Ruby ${ruby_version} runtime is already downloaded."
         continue
     fi

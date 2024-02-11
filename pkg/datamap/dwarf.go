@@ -9,7 +9,7 @@ import (
 
 // ReadFromDWARF reads the DWARF data and extracts the offsets of the definitions.
 func (dataMap *DataMap) ReadFromDWARF(dwarfData *dwarf.Data) error {
-	// TODO(kakkoyun): Optimize finding the entries and struct types.
+	// TODO: Optimize finding the entries and struct types.
 	// - Wait until we are sure about the correctness of the implementation.
 	for _, rn := range dataMap.Routes {
 		entries, err := findEntries(dwarfData, rn.Type)

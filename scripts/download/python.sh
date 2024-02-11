@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# This script helps to download python runtimes using container images.
+# This script helps to download python runtimes using container images for integration tests.
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}
 TARGET_DIR=${TARGET_DIR:-tests/integration/binaries/python}

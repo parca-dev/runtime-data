@@ -15,49 +15,99 @@ package ruby
 
 import (
 	"embed"
-	"fmt"
+	"errors"
+	"path/filepath"
+	"strings"
+	"sync"
 
+	"github.com/Masterminds/semver/v3"
 	"gopkg.in/yaml.v3"
 )
 
-//go:embed versions/*.yaml
-var versions embed.FS
-
-// GetVersions returns all the versions of Ruby that are supported.
-func GetVersions() ([]VersionOffsets, error) {
-	entries, err := versions.ReadDir("versions")
-	if err != nil {
-		return nil, err
-	}
-	var offsetVersions []VersionOffsets
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		data, err := versions.ReadFile("versions/" + entry.Name())
-		if err != nil {
-			return nil, err
-		}
-		var version VersionOffsets
-		err = yaml.Unmarshal(data, &version)
-		if err != nil {
-			return nil, err
-		}
-		offsetVersions = append(offsetVersions, version)
-	}
-	return offsetVersions, nil
+type Key struct {
+	index      int
+	constraint string
 }
 
-// GetVersionMap returns a map of Ruby version offsets.
-func GetVersionMap() (map[string]VersionOffsets, error) {
-	versions, err := GetVersions()
+const versionDir = "versions"
+
+var (
+	//go:embed versions/*.yaml
+	generatedLayouts embed.FS
+	versions         = map[Key]*Layout{}
+	once             = &sync.Once{}
+)
+
+func init() {
+	var err error
+	versions, err = loadVersionLayouts()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func loadVersionLayouts() (map[Key]*Layout, error) {
+	var err error
+	once.Do(func() {
+		entries, err := generatedLayouts.ReadDir(versionDir)
+		if err != nil {
+			return
+		}
+		var i int
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			var data []byte
+			data, err = generatedLayouts.ReadFile(filepath.Join(versionDir, entry.Name()))
+			if err != nil {
+				return
+			}
+			ext := filepath.Ext(entry.Name())
+			// Filter out non-yaml files.
+			if ext != ".yaml" && ext != ".yml" {
+				continue
+			}
+			var lyt Layout
+			if err = yaml.Unmarshal(data, &lyt); err != nil {
+				return
+			}
+			rawConstraint := strings.TrimSuffix(entry.Name(), ext)
+			constr, err := semver.NewConstraint(rawConstraint)
+			if err != nil {
+				return
+			}
+			key := Key{index: i, constraint: constr.String()}
+			versions[key] = &lyt
+			i++
+		}
+	})
+	return versions, err
+}
+
+// GetLayout returns the matching layout for the given version.
+func GetLayout(v *semver.Version) (Key, *Layout, error) {
+	versions, err := loadVersionLayouts()
+	if err != nil {
+		return Key{}, nil, err
+	}
+	for k, l := range versions {
+		constr, err := semver.NewConstraint(k.constraint)
+		if err != nil {
+			return k, nil, err
+		}
+		if constr.Check(v) {
+			return k, l, nil
+		}
+	}
+	return Key{}, nil, errors.New("not found")
+}
+
+// GetLayouts returns all the layouts for the supported versions.
+func GetLayouts() (map[Key]*Layout, error) {
+	versions, err := loadVersionLayouts()
 	if err != nil {
 		return nil, err
 	}
-	versionMap := make(map[string]VersionOffsets)
-	for _, pvo := range versions {
-		version := fmt.Sprintf("%d.%d.%d", pvo.MajorVersion, pvo.MinorVersion, pvo.PatchVersion)
-		versionMap[version] = pvo
-	}
-	return versionMap, nil
+	return versions, nil
 }

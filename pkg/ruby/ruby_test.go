@@ -13,30 +13,43 @@
 package ruby
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/Masterminds/semver/v3"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestGetVersions(t *testing.T) {
-	versions, err := GetVersions()
+	versions, err := loadVersionLayouts()
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Log(versions)
 }
 
-func TestGetVersionMap(t *testing.T) {
+func TestGetLayout(t *testing.T) {
 	tests := []struct {
 		version string
-		want    VersionOffsets
+		want    *Layout
 		wantErr bool
 	}{
 		{
+			version: "2.7.3",
+			want: &Layout{
+				VMSizeOffset:        8,
+				ControlFrameSizeof:  56,
+				CfpOffset:           16,
+				LabelOffset:         16,
+				PathFlavour:         1,
+				LineInfoSizeOffset:  136,
+				LineInfoTableOffset: 120,
+				MainThreadOffset:    192,
+				EcOffset:            32,
+			},
+		},
+		{
 			version: "3.0.4",
-			want: VersionOffsets{
-				MajorVersion:        3,
-				MinorVersion:        0,
-				PatchVersion:        4,
+			want: &Layout{
 				VMOffset:            0,
 				VMSizeOffset:        8,
 				ControlFrameSizeof:  56,
@@ -46,21 +59,53 @@ func TestGetVersionMap(t *testing.T) {
 				LineInfoSizeOffset:  136,
 				LineInfoTableOffset: 120,
 				LinenoOffset:        0,
-				MainThreadOffset:    32,
+				MainThreadOffset:    40,
+				EcOffset:            520,
+			},
+		},
+		{
+			version: "3.1.2",
+			want: &Layout{
+				VMSizeOffset:        8,
+				ControlFrameSizeof:  64,
+				CfpOffset:           16,
+				LabelOffset:         16,
+				PathFlavour:         1,
+				LineInfoSizeOffset:  136,
+				LineInfoTableOffset: 120,
+				MainThreadOffset:    40,
+				EcOffset:            520,
+			},
+		},
+		{
+			version: "3.2.1",
+			want: &Layout{
+				VMSizeOffset:        8,
+				ControlFrameSizeof:  64,
+				CfpOffset:           16,
+				LabelOffset:         16,
+				PathFlavour:         1,
+				LineInfoSizeOffset:  128,
+				LineInfoTableOffset: 112,
+				MainThreadOffset:    40,
 				EcOffset:            520,
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.version, func(t *testing.T) {
-			m, err := GetVersionMap()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetVersionMap() error = %v, wantErr %v", err, tt.wantErr)
+			version, err := semver.StrictNewVersion(tt.version)
+			if err != nil {
+				t.Errorf("StrictNewVersion() error = %v", err)
 				return
 			}
-			got := m[tt.version]
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetVersionMap() = %v, want %v", got, tt.want)
+			_, got, err := GetLayout(version)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetLayout() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(*got, *tt.want, cmp.AllowUnexported(Layout{})); diff != "" {
+				t.Errorf("GetLayout() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}

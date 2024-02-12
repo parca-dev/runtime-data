@@ -1,6 +1,6 @@
 ---
 name: Generate Python
-'on':
+"on":
   workflow_call: null
   push:
     branches:
@@ -201,9 +201,14 @@ jobs:
       - name: Build
         run: make build
       - name: Generate python Offsets for ${{ matrix.python-version }}
-        run: >-
-          |-
-          | export python_version="${{ matrix.python-version }}" docker run --rm -v "${PWD}"/python-binaries:/tmp -w /tmp python:${{ matrix.python-version }} bash -c 'cp /usr/local/lib/libpython"${python_version%.*}"*.so.1.0 /tmp' ./structlayout -r python -v ${{ matrix.python-version }} -o offsets-python python-binaries/libpython"${python_version%.*}"*.so.1.0 git add offsets-python cp $(git diff --name-only --staged | xargs) offsets-python || echo "No new or modified files - offsets
+        run: |
+          export python_version="${{ matrix.python-version }}"
+
+          docker run --rm -v "${PWD}"/python-binaries:/tmp -w /tmp python:${{ matrix.python-version }} bash -c 'cp /usr/local/lib/libpython"${python_version%.*}"*.so.1.0 /tmp'
+
+          ./structlayout -r python -v ${{ matrix.python-version }} -o offsets-python python-binaries/libpython"${python_version%.*}"*.so.1.0 git add offsets-python
+
+          cp $(git diff --name-only --staged | xargs) offsets-python || echo "No new or modified files - offsets
           are up to date"
       - name: Upload Offsets
         uses: actions/upload-artifact@v3
@@ -245,8 +250,8 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: update python layout'
-          title: 'chore: update python layout'
+          commit-message: "chore: update python layout"
+          title: "chore: update python layout"
           body: This PR updates the python layout.
           branch: update-python-offsets-${{ github.run_number }}
           base: main

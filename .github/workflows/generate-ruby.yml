@@ -133,7 +133,7 @@ jobs:
         run: make build
       - name: Generate Ruby Offsets for ${{ matrix.ruby-version }}
         run: |
-          docker run --rm -v "${PWD}"/ruby-binaries:/tmp -w /tmp ruby:${ruby_version}-slim cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp
+          docker run --rm -v "${PWD}"/ruby-binaries:/tmp -w /tmp ruby:${{ matrix.ruby-version }}-slim cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp
 
           ./structlayout -r ruby -v ${{ matrix.ruby-version }} -o offsets-ruby ruby-binaries/libruby.so.${{ matrix.ruby-version }}
 

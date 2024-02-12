@@ -1,24 +1,14 @@
+---
 name: Integration Tests
-
-on:
-  workflow_call:
-  # workflow_run:
-  #   workflows: ["Test"]
-  #   types:
-  #     - completed
-  push:
-    branches:
-      - main
-      - release-*
-  pull_request:
-    branches:
-      - main
-      - release-*
-
+'on':
+  workflow_call: null
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
-
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
@@ -26,32 +16,25 @@ jobs:
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1
-
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.8.0
         with:
           enable-cache: true
-
       - name: Setup devbox
         run: devbox run -- echo "done!"
-
       - name: Load devbox shellenv
         uses: HatsuneMiku3939/direnv-action@v1
         with:
           direnvVersion: 2.32.3
-
       - name: Download Ruby Runtimes
         run: ./scripts/download/ruby.sh
-
       - name: Download Python Runtimes
         run: ./scripts/download/python.sh
-
       - name: Set up cache for test runtimes
         uses: actions/cache@v3.3.2
         with:
           path: |
             ./tests/integration/binaries
           key: ${{ runner.arch }}-integration-runtimes-${{ hashFiles('scripts/download/*.sh') }}
-
       - name: Run integration tests
         run: make test/integration

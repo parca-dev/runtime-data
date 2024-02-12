@@ -1,6 +1,6 @@
 ---
 name: Test
-'on':
+"on":
   workflow_call: null
   workflow_run:
     workflows: ["Build"]
@@ -13,7 +13,7 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1

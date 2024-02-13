@@ -6,14 +6,6 @@ on:
     workflows: ["Build"]
     types:
       - completed
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/generate-ruby.yml
 
 permissions:
   contents: write
@@ -84,7 +76,7 @@ jobs:
         run: |
           if ! ls "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}/libruby.so.${{ matrix.ruby-version }} 1>/dev/null 2>&1; then
             mkdir -p "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}
-            docker run --rm -v "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}:/tmp -w /tmp docker.io/library/ruby:${{ matrix.ruby-version }}-slim bash -c 'cp /usr/lib/libruby.so.${{ matrix.ruby-version }} /tmp'
+            docker run --rm -v "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}:/tmp -w /tmp docker.io/library/ruby:${{ matrix.ruby-version }}-slim bash -c 'cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp'
           fi
 
           ./structlayout -r ruby -v ${{ matrix.ruby-version }} -o offsets-ruby ruby-binaries/${{ matrix.ruby-version }}/libruby.so.${{ matrix.ruby-version }}

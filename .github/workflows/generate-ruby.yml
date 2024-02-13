@@ -1,17 +1,22 @@
----
 name: Generate Ruby
-'on':
+
+on:
   workflow_call: null
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
   push:
-    branches:
-      - main
     paths:
-      - .github/workflows/generate-ruby.yml
+      - ".github/workflows/generate-ruby.yml"
+
 permissions:
   contents: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
+
 jobs:
   generate:
     runs-on: ubuntu-latest
@@ -19,169 +24,120 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby-version:
-          - 2.0.0
-          - 2.1.0
-          - 2.1.1
-          - 2.1.2
-          - 2.1.3
-          - 2.1.4
-          - 2.1.5
-          - 2.1.6
-          - 2.1.7
-          - 2.1.8
-          - 2.1.9
-          - 2.1.10
-          - 2.2.0
-          - 2.2.1
-          - 2.2.2
-          - 2.2.3
-          - 2.2.4
-          - 2.2.5
-          - 2.2.6
-          - 2.2.7
-          - 2.2.8
-          - 2.2.9
-          - 2.2.10
-          - 2.3.0
-          - 2.3.1
-          - 2.3.2
-          - 2.3.3
-          - 2.3.4
-          - 2.3.5
-          - 2.3.6
-          - 2.3.7
-          - 2.3.8
-          - 2.4.0
-          - 2.4.1
-          - 2.4.2
-          - 2.4.3
-          - 2.4.4
-          - 2.4.5
-          - 2.4.6
-          - 2.4.7
-          - 2.4.8
-          - 2.4.9
-          - 2.4.10
-          - 2.5.0
-          - 2.5.1
-          - 2.5.2
-          - 2.5.3
-          - 2.5.4
-          - 2.5.5
-          - 2.5.6
-          - 2.5.7
-          - 2.5.8
-          - 2.5.9
-          - 2.6.0
-          - 2.6.1
-          - 2.6.2
-          - 2.6.3
-          - 2.6.4
-          - 2.6.5
-          - 2.6.6
-          - 2.6.7
-          - 2.6.8
-          - 2.6.9
-          - 2.6.10
-          - 2.7.0
-          - 2.7.1
-          - 2.7.2
-          - 2.7.3
-          - 2.7.4
-          - 2.7.5
-          - 2.7.6
-          - 2.7.7
-          - 2.7.8
-          - 3.0.0
-          - 3.0.1
-          - 3.0.2
-          - 3.0.3
-          - 3.0.4
-          - 3.0.5
-          - 3.0.6
-          - 3.1.0
-          - 3.1.1
-          - 3.1.2
-          - 3.1.3
-          - 3.1.4
-          - 3.2.0
-          - 3.2.1
-          - 3.2.2
-          - 3.2.3
-          - 3.3.0
+        ruby-version: [
+          2.6.0, 2.6.1, 2.6.2, 2.6.3, 2.6.4, 2.6.5, 2.6.6, 2.6.7, 2.6.8, 2.6.9, 2.6.10,
+          2.7.0, 2.7.1, 2.7.2, 2.7.3, 2.7.4, 2.7.5, 2.7.6, 2.7.7, 2.7.8,
+          3.0.0, 3.0.1, 3.0.2, 3.0.3, 3.0.4, 3.0.5, 3.0.6,
+          3.1.0, 3.1.1, 3.1.2, 3.1.3, 3.1.4,
+          3.2.0, 3.2.1, 3.2.2, 3.2.3, 3.3.0
+        ]
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1
+
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.8.0
         with:
           enable-cache: true
+
       - name: Setup devbox
         run: devbox run -- echo "done!"
+
       - name: Load devbox shellenv
         uses: HatsuneMiku3939/direnv-action@v1
         with:
           direnvVersion: 2.32.3
+
       - name: Set up Go tool cache
         uses: actions/cache@v3.3.2
         with:
           path: |
             ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.arch }}-${{ hashFiles('Makefile') }}
+
       - name: Build
         run: make build
+
+      - name: Set up container image for generate
+        uses: ScribeMD/docker-cache@0.3.7
+        with:
+          key: docker-ruby-${{ runner.os }}-${{ hashFiles('.github/workflows/generate-ruby.yml') }}
+
+      - name: Set up Layout cache for generated files
+        uses: actions/cache@v3.3.2
+        with:
+          path: |
+            offsets-ruby
+          key: offsets-ruby-${{ matrix.ruby-version }}
+
       - name: Generate Ruby Offsets for ${{ matrix.ruby-version }}
         run: |
-          docker run --rm -v "${PWD}"/ruby-binaries:/tmp -w /tmp ruby:${{ matrix.ruby-version }}-slim cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp
+          if ! ls "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}/libruby.so.${{ matrix.ruby-version }} 1>/dev/null 2>&1; then
+            mkdir -p "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}
+            docker run --rm -v "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}:/tmp -w /tmp docker.io/library/ruby:${{ matrix.ruby-version }}-slim bash -c 'cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp'
+          fi
 
-          ./structlayout -r ruby -v ${{ matrix.ruby-version }} -o offsets-ruby ruby-binaries/libruby.so.${{ matrix.ruby-version }}
+          mkdir -p offsets-ruby
+          ./structlayout -r ruby -v ${{ matrix.ruby-version }} -o offsets-ruby ruby-binaries/${{ matrix.ruby-version }}/libruby.so.${{ matrix.ruby-version }}
 
           git add offsets-ruby
 
           cp $(git diff --name-only --staged | xargs) offsets-ruby || echo "No new or modified files - offsets are up to date"
+
       - name: Upload Offsets
         uses: actions/upload-artifact@v3
         with:
           if-no-files-found: ignore
           name: ruby-${{ matrix.ruby-version }}
           path: offsets-ruby
+
   create-branch:
     runs-on: ubuntu-latest
     needs: generate
+    if: github.event.pull_request.merged == true
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1
+
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.8.0
         with:
           enable-cache: true
+
       - name: Setup devbox
         run: devbox run -- echo "done!"
+
       - name: Load devbox shellenv
         uses: HatsuneMiku3939/direnv-action@v1
         with:
           direnvVersion: 2.32.3
+
       - name: Set up Go tool cache
         uses: actions/cache@v3.3.2
         with:
           path: |
             ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.arch }}-${{ hashFiles('Makefile') }}
+
       - name: Build
         run: make build
+
       - uses: actions/download-artifact@v3
         with:
           name: offsets-${{ matrix.ruby-version }}
-          path: offsets-staging
+          path: offsets-ruby
+
       - name: Merge offsets
         run: ./mergelayout -o pkg/ruby/versions offsets-ruby
+
+      # If there are no changes (i.e. no diff exists with the checked-out base branch),
+      # no pull request will be created and the action exits silently.
       - name: Create a pull-request
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: update ruby layout'
-          title: 'chore: update ruby layout'
+          commit-message: "chore: update ruby layout"
+          title: "chore: update ruby layout"
           body: This PR updates the ruby layout.
           branch: update-ruby-offsets-${{ github.run_number }}
           base: main

@@ -1,7 +1,7 @@
----
 name: Build
-'on':
-  workflow_call: null
+
+on:
+  workflow_call:
   push:
     branches:
       - main
@@ -10,34 +10,43 @@ name: Build
     branches:
       - main
       - release-*
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1
+
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.8.0
         with:
           enable-cache: true
+
       - name: Setup devbox
         run: devbox run -- echo "done!"
+
       - name: Load devbox shellenv
         uses: HatsuneMiku3939/direnv-action@v1
         with:
           direnvVersion: 2.32.3
+
       - name: Set up Go tool cache
         uses: actions/cache@v3.3.2
         with:
           path: |
             ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.arch }}-${{ hashFiles('Makefile') }}
+
       - name: Check
         run: make check
+
       - name: Format
         run: make format
+
       - name: Build
         run: make build

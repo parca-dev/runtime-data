@@ -5,6 +5,9 @@ on:
     workflows: ["Build"]
     types:
       - completed
+  push:
+    paths:
+      - ".github/workflows/generate-python.yml"
 
 permissions:
   contents: write

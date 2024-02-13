@@ -6,6 +6,9 @@ on:
     workflows: ["Build"]
     types:
       - completed
+  push:
+    paths:
+      - ".github/workflows/generate-ruby.yml"
 
 permissions:
   contents: write

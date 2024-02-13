@@ -85,7 +85,7 @@ jobs:
 
           if ! ls python-binaries/${{ matrix.python-version }}/libpython"${python_version%.*}"*.so.1.0 1> /dev/null 2>&1; then
             mkdir -p python-binaries/${{ matrix.python-version }}
-            docker run --rm -v "${PWD}"/python-binaries/${{ matrix.python-version }}:/tmp -w /tmp docker://python:v${{ matrix.python-version }} bash -c 'cp /usr/local/lib/libpython"${python_version%.*}"*.so.1.0 /tmp'
+            docker run --rm -v "${PWD}"/python-binaries/${{ matrix.python-version }}:/tmp -w /tmp docker.io/library/python:v${{ matrix.python-version }} bash -c 'cp /usr/local/lib/libpython"${python_version%.*}"*.so.1.0 /tmp'
           fi
 
           ./structlayout -r python -v ${{ matrix.python-version }} -o offsets-python python-binaries/libpython"${python_version%.*}"*.so.1.0

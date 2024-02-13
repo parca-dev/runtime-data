@@ -80,7 +80,7 @@ jobs:
         run: |
           if ! ls "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}/libruby.so.${{ matrix.ruby-version }} 1>/dev/null 2>&1; then
             mkdir -p "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}
-            docker run --rm -v "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}:/tmp -w /tmp docker://ruby:${{ matrix.ruby-version }}-slim cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp
+            docker run --rm -v "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}:/tmp -w /tmp docker.io/library/ruby:${{ matrix.ruby-version }}-slim cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp
           fi
 
           ./structlayout -r ruby -v ${{ matrix.ruby-version }} -o offsets-ruby ruby-binaries/${{ matrix.ruby-version }}/libruby.so.${{ matrix.ruby-version }}

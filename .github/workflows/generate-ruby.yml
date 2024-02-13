@@ -9,6 +9,9 @@ on:
   push:
     paths:
       - ".github/workflows/generate-ruby.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/generate-ruby.yml"
 
 permissions:
   contents: write

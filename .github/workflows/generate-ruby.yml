@@ -82,6 +82,7 @@ jobs:
             docker run --rm -v "${PWD}"/ruby-binaries/${{ matrix.ruby-version }}:/tmp -w /tmp docker.io/library/ruby:${{ matrix.ruby-version }}-slim bash -c 'cp /usr/local/lib/libruby.so.${{ matrix.ruby-version }} /tmp'
           fi
 
+          mkdir -p offsets-ruby
           ./structlayout -r ruby -v ${{ matrix.ruby-version }} -o offsets-ruby ruby-binaries/${{ matrix.ruby-version }}/libruby.so.${{ matrix.ruby-version }}
 
           git add offsets-ruby

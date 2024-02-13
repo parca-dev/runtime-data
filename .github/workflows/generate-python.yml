@@ -1,6 +1,10 @@
 name: Generate Python
 on:
   workflow_call:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
   pull_request:
     branches:
       - main

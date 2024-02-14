@@ -96,11 +96,12 @@ jobs:
           are up to date"
 
       - name: Upload Offsets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           if-no-files-found: ignore
           name: python-${{ matrix.python-version }}
           path: offsets-python
+          retention-days: 1
 
   create-branch:
     runs-on: ubuntu-latest
@@ -133,10 +134,11 @@ jobs:
       - name: Build
         run: make build
 
-      - uses: actions/download-artifact@v3
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: offsets-${{ matrix.python-version }}
           path: offsets-python
+          merge-multiple: true
 
       - name: Merge offsets
         run: ./mergelayout -o pkg/python/versions offsets-python

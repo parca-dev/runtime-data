@@ -89,11 +89,12 @@ jobs:
           cp $(git diff --name-only --staged | xargs) offsets-ruby || echo "No new or modified files - offsets are up to date"
 
       - name: Upload Offsets
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           if-no-files-found: ignore
           name: ruby-${{ matrix.ruby-version }}
           path: offsets-ruby
+          retention-days: 1
 
   create-branch:
     runs-on: ubuntu-latest
@@ -126,10 +127,11 @@ jobs:
       - name: Build
         run: make build
 
-      - uses: actions/download-artifact@v3
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          name: offsets-${{ matrix.ruby-version }}
           path: offsets-ruby
+          merge-multiple: true
 
       - name: Merge offsets
         run: ./mergelayout -o pkg/ruby/versions offsets-ruby

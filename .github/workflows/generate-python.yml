@@ -157,5 +157,4 @@ jobs:
           base: main
           labels: chore
           draft: false
-          maintainer-can-modify: true
           delete-branch: true

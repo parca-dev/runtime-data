@@ -8,6 +8,9 @@ on:
   push:
     paths:
       - ".github/workflows/generate-python.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/generate-python.yml"
 
 permissions:
   contents: write

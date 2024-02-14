@@ -78,7 +78,7 @@ jobs:
 
           if ! ls python-binaries/${{ matrix.arch }}/${{ matrix.python-version }}/libpython"${python_version%.*}"*.so.1.0 1> /dev/null 2>&1; then
             mkdir -p python-binaries/${{ matrix.arch }}/${{ matrix.python-version }}
-            docker run --rm --platform "linux/${{ matrix.arch }}" -v "${PWD}"/python-binaries/${{ matrix.arch }}/${{ matrix.python-version }}:/tmp -w /tmp docker.io/library/python:${{ matrix.python-version }} bash -c 'cp /usr/local/lib/libpython"${python_version%.*}"*.so.1.0 /tmp'
+            docker run --rm --platform "linux/${{ matrix.arch }}" -v "${PWD}"/python-binaries/${{ matrix.arch }}/${{ matrix.python-version }}:/tmp -w /tmp docker.io/library/python:${{ matrix.python-version }} bash -c 'cp /usr/local/lib/libpython"${python_version%.*}"*.so.1.0 /tmp' || exit 0 # (some containers of python do not have arm64 version)
           fi
 
           mkdir -p offsets-python/${{ matrix.arch }}

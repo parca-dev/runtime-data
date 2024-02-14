@@ -76,7 +76,7 @@ jobs:
           path: offsets-python
           key: python-generated-${{ runner.os }}-${{ runner.arch }}
           restore-keys: |
-            python-generated-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }
+            python-generated-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}
             python-generated-${{ runner.os }}-${{ runner.arch }}
 
       - name: Generate python Offsets for ${{ matrix.python-version }}
@@ -148,14 +148,14 @@ jobs:
       # If there are no changes (i.e. no diff exists with the checked-out base branch),
       # no pull request will be created and the action exits silently.
       - name: Create a pull-request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update python layout"
-          title: "chore: update python layout"
-          body: This PR updates the python layout.
+          commit-message: "chore: update python layouts"
+          title: "chore: Update Python layouts"
           branch: update-python-offsets-${{ github.run_number }}
           base: main
           labels: chore
           draft: false
           maintainer-can-modify: true
+          delete-branch: true

@@ -141,14 +141,14 @@ jobs:
       # If there are no changes (i.e. no diff exists with the checked-out base branch),
       # no pull request will be created and the action exits silently.
       - name: Create a pull-request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update ruby layout"
-          title: "chore: update ruby layout"
-          body: This PR updates the ruby layout.
+          commit-message: "chore: update ruby layouts"
+          title: "chore: Update Ruby layouts"
           branch: update-ruby-offsets-${{ github.run_number }}
           base: main
           labels: chore
           draft: false
           maintainer-can-modify: true
+          delete-branch: true

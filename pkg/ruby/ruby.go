@@ -17,6 +17,7 @@ import (
 	"embed"
 	"errors"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -29,10 +30,10 @@ type Key struct {
 	constraint string
 }
 
-const versionDir = "layout"
+const layoutDir = "layout"
 
 var (
-	//go:embed layout/*.yaml
+	//go:embed layout/*/*.yaml
 	generatedLayouts embed.FS
 	structLayouts    = map[Key]*Layout{}
 	once             = &sync.Once{}
@@ -49,7 +50,7 @@ func init() {
 func loadLayouts() (map[Key]*Layout, error) {
 	var err error
 	once.Do(func() {
-		entries, err := generatedLayouts.ReadDir(versionDir)
+		entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, runtime.GOARCH))
 		if err != nil {
 			return
 		}
@@ -59,7 +60,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 				continue
 			}
 			var data []byte
-			data, err = generatedLayouts.ReadFile(filepath.Join(versionDir, entry.Name()))
+			data, err = generatedLayouts.ReadFile(filepath.Join(layoutDir, runtime.GOARCH, entry.Name()))
 			if err != nil {
 				return
 			}

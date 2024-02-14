@@ -32,8 +32,15 @@ ruby_versions=(
     3.2.1
 )
 
+target_archs=(
+    amd64
+    arm64
+)
+
 mkdir -p tmp/ruby
 for ruby_version in "${ruby_versions[@]}"; do
-    echo "Running structlayout for ruby ${ruby_version} runtime..."
-    ./structlayout -r ruby -v "${ruby_version}" -o tmp/ruby tests/integration/binaries/ruby/libruby.so.${ruby_version}
+    for arch in "${target_archs[@]}"; do
+        echo "Running structlayout againt ruby ${ruby_version} runtime for ${arch}..."
+        ./structlayout -r ruby -v "${ruby_version}" -o tmp/ruby/${arch} tests/integration/binaries/ruby/${arch}/libruby.so.${ruby_version}
+    done
 done

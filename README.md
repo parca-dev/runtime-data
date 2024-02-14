@@ -3,6 +3,26 @@
 This project is a collection of tools to extract runtime data from several interpreters and runtimes.
 By runtime data, we mean information about the execution of a program, especially stack unwinding and profiling.
 
+## Requirements
+
+- [Devbox](https://jetpack.io/devbox)
+  - Also see [CONTRIBUTING.md](CONTRIBUTING.md) for more information about the development environment.
+- [direnv](https://direnv.net/)
+
+```sh
+make bootstrap
+```
+
+- A container runtime (e.g. Docker, Podman)
+  - Ability to run cross-platform containers (e.g. Docker Desktop, Podman with QEMU)
+
+```sh
+sudo apt-get install qemu binfmt-support qemu-user-static # Install the qemu packages
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes # This step will execute the registering scripts
+
+docker run --rm -t arm64v8/ubuntu uname -m
+```
+
 ## Usage
 
 ### Python

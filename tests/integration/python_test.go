@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -53,7 +54,9 @@ func TestPythonIntegration(t *testing.T) {
 			}
 
 			parts := strings.Split(version, ".")
-			matches, err := filepath.Glob(fmt.Sprintf("%s/%s/libpython%s.%s*.so.1.0", TargetDirPython, version, parts[0], parts[1]))
+			matches, err := filepath.Glob(
+				fmt.Sprintf("%s/%s/%s/libpython%s.%s*.so.1.0", TargetDirPython, runtime.GOARCH, version, parts[0], parts[1]),
+			)
 			if err != nil {
 				t.Fatalf("filepath.Glob() = %v", err)
 			}

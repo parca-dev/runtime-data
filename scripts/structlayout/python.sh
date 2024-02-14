@@ -39,8 +39,15 @@ python_versions=(
     3.11.0 # bugfix
 )
 
+target_archs=(
+    amd64
+    arm64
+)
+
 mkdir -p tmp/python/
 for python_version in "${python_versions[@]}"; do
-    echo "Running structlayout for python ${python_version} runtime..."
-    ./structlayout -r python -v "${python_version}" -o tmp/python tests/integration/binaries/python/"${python_version}"/libpython"${python_version%.*}"*.so.1.0
+    for arch in "${target_archs[@]}"; do
+        echo "Running structlayout against python ${python_version} runtime for ${arch}..."
+        ./structlayout -r python -v "${python_version}" -o tmp/python/${arch} tests/integration/binaries/python/${arch}/"${python_version}"/libpython"${python_version%.*}"*.so.1.0
+    done
 done

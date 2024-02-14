@@ -13,6 +13,8 @@
 package python
 
 import (
+	"fmt"
+	"runtime"
 	"testing"
 
 	"github.com/Masterminds/semver/v3"
@@ -27,14 +29,18 @@ func TestGetLayouts(t *testing.T) {
 	t.Log(layouts)
 }
 
+var allSupportedArchs = []string{"amd64", "arm64"}
+
 func TestGetLayout(t *testing.T) {
 	tests := []struct {
 		version string
+		archs   []string
 		want    *Layout
 		wantErr bool
 	}{
 		{
 			version: "2.7.15",
+			archs:   allSupportedArchs,
 			want: &Layout{
 				PyCodeObject: PyCodeObject{
 					CoFilename:    80,
@@ -63,6 +69,7 @@ func TestGetLayout(t *testing.T) {
 		},
 		{
 			version: "3.6.6",
+			archs:   allSupportedArchs,
 			want: &Layout{
 				PyCodeObject: PyCodeObject{
 					CoFilename:    96,
@@ -97,6 +104,7 @@ func TestGetLayout(t *testing.T) {
 		},
 		{
 			version: "3.11.0",
+			archs:   allSupportedArchs,
 			want: &Layout{
 				PyObject: PyObject{
 					ObType: 8,
@@ -144,51 +152,54 @@ func TestGetLayout(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.version, func(t *testing.T) {
-			version, err := semver.StrictNewVersion(tt.version)
-			if err != nil {
-				t.Errorf("StrictNewVersion() error = %v", err)
-				return
-			}
-			_, got, err := GetLayout(version)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetLayout() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(Layout{})); diff != "" {
-				t.Errorf("GetLayout() mismatch (-want +got):\n%s", diff)
-			}
-		})
+		var (
+			version = tt.version
+			want    = tt.want
+		)
+		for _, arch := range tt.archs {
+			arch := arch
+			t.Run(version, func(t *testing.T) {
+				v, err := semver.StrictNewVersion(version)
+				if err != nil {
+					t.Errorf("StrictNewVersion() error = %v", err)
+					return
+				}
+				_, got, err := getLayoutForArch(v, arch)
+				if (err != nil) != tt.wantErr {
+					t.Errorf("GetLayout(%s on %s) error = %v, wantErr %v", version, arch, err, tt.wantErr)
+					return
+				}
+				if diff := cmp.Diff(want, got, cmp.AllowUnexported(Layout{})); diff != "" {
+					t.Errorf("GetLayout(%s on %s) mismatch (-want +got):\n%s", version, arch, diff)
+				}
+			})
+		}
 	}
 }
 
 func TestGetInitialState(t *testing.T) {
 	tests := []struct {
-		name    string
 		version string
+		arch    string
 		want    *InitialState
 		wantErr bool
 	}{
 		{
-			name:    "2.7.15",
 			version: "2.7.15",
 			want:    nil,
 			wantErr: true,
 		},
 		{
-			name:    "3.3.7",
 			version: "3.3.7",
 			want:    nil,
 			wantErr: true,
 		},
 		{
-			name:    "3.6.6",
 			version: "3.6.6",
 			want:    nil,
 			wantErr: true,
 		},
 		{
-			name:    "3.7.2",
 			version: "3.7.2",
 			want: &InitialState{
 				InterpreterHead:    24,
@@ -196,7 +207,6 @@ func TestGetInitialState(t *testing.T) {
 			},
 		},
 		{
-			name:    "3.7.4",
 			version: "3.7.4",
 			want: &InitialState{
 				InterpreterHead:    24,
@@ -204,7 +214,6 @@ func TestGetInitialState(t *testing.T) {
 			},
 		},
 		{
-			name:    "3.8.0",
 			version: "3.8.0",
 			want: &InitialState{
 				InterpreterHead:    32,
@@ -212,7 +221,6 @@ func TestGetInitialState(t *testing.T) {
 			},
 		},
 		{
-			name:    "3.9.6",
 			version: "3.9.6",
 			want: &InitialState{
 				InterpreterHead:    32,
@@ -220,7 +228,6 @@ func TestGetInitialState(t *testing.T) {
 			},
 		},
 		{
-			name:    "3.10.0",
 			version: "3.10.0",
 			want: &InitialState{
 				InterpreterHead:    32,
@@ -228,28 +235,103 @@ func TestGetInitialState(t *testing.T) {
 			},
 		},
 		{
-			name:    "3.11.0",
 			version: "3.11.0",
 			want: &InitialState{
 				InterpreterHead:    40,
 				ThreadStateCurrent: 576,
 			},
 		},
+		// arm64
+		{
+			version: "2.7.15",
+			arch:    "arm64",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			version: "3.3.7",
+			arch:    "arm64",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			version: "3.6.6",
+			arch:    "arm64",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			version: "3.7.2",
+			arch:    "arm64",
+			want: &InitialState{
+				InterpreterHead:    24,
+				ThreadStateCurrent: 1408,
+			},
+		},
+		{
+			version: "3.7.4",
+			arch:    "arm64",
+			want: &InitialState{
+				InterpreterHead:    24,
+				ThreadStateCurrent: 1496,
+			},
+		},
+		{
+			version: "3.8.0",
+			arch:    "arm64",
+			want: &InitialState{
+				InterpreterHead:    32,
+				ThreadStateCurrent: 1384,
+			},
+		},
+		{
+			version: "3.9.6",
+			arch:    "arm64",
+			want: &InitialState{
+				InterpreterHead:    32,
+				ThreadStateCurrent: 584,
+			},
+		},
+		{
+			version: "3.10.0",
+			arch:    "arm64",
+			want: &InitialState{
+				InterpreterHead:    32,
+				ThreadStateCurrent: 584,
+			},
+		},
+		{
+			version: "3.11.0",
+			arch:    "arm64",
+			want: &InitialState{
+				InterpreterHead:    40,
+				ThreadStateCurrent: 592,
+			},
+		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			v, err := semver.StrictNewVersion(tt.version)
+		var (
+			arch    = tt.arch
+			version = tt.version
+			want    = tt.want
+		)
+		if tt.arch == "" {
+			arch = runtime.GOARCH
+		}
+		name := fmt.Sprintf("%s on %s", tt.version, arch)
+		t.Run(name, func(t *testing.T) {
+			v, err := semver.StrictNewVersion(version)
 			if err != nil {
 				t.Errorf("StrictNewVersion() error = %v", err)
 				return
 			}
-			_, got, err := GetInitialState(v)
+			_, got, err := getInitialStateForArch(v, arch)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetInitialState(%s) error = %v, wantErr %v", tt.name, err, tt.wantErr)
+				t.Errorf("GetInitialState(%s) error = %v, wantErr %v", name, err, tt.wantErr)
 				return
 			}
-			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(InitialState{})); diff != "" {
-				t.Errorf("GetInitialState(%s) mismatch (-want +got):\n%s", tt.name, diff)
+			if diff := cmp.Diff(want, got, cmp.AllowUnexported(InitialState{})); diff != "" {
+				t.Errorf("GetInitialState(%s) mismatch (-want +got):\n%s", name, diff)
 			}
 		})
 	}

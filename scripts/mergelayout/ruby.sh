@@ -17,5 +17,14 @@
 set -euo pipefail
 
 # This script helps to merge structlayout outputs in specified directory for integration tests.
-rm -f pkg/ruby/layout/*.yaml
-./mergelayout -o pkg/ruby/layout 'tmp/ruby/layout/ruby_*.yaml'
+
+target_archs=(
+    amd64
+    arm64
+)
+
+rm -rf pkg/ruby/layout
+for arch in "${target_archs[@]}"; do
+    mkdir -p pkg/ruby/layout/"${arch}"
+    ./mergelayout -o pkg/ruby/layout/"${arch}" tmp/ruby/"${arch}"/layout/'ruby_*.yaml'
+done

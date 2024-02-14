@@ -6,11 +6,12 @@ on:
     types:
       - completed
   push:
+    branches:
+      - main
+      - release
     paths:
       - ".github/workflows/generate-python.yml"
   pull_request:
-    paths:
-      - ".github/workflows/generate-python.yml"
 
 permissions:
   contents: write
@@ -56,11 +57,11 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Set up Go tool cache
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.0
         with:
           path: |
             ~/.devbox/go
-          key: devbox-go-tools.cache-${{ runner.arch }}-${{ hashFiles('Makefile') }}
+          key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
 
       - name: Build
         run: make build
@@ -68,16 +69,14 @@ jobs:
       - name: Set up container image for generate
         uses: ScribeMD/docker-cache@0.3.7
         with:
-          key: docker-python-${{ runner.os }}-${{ hashFiles('.github/workflows/generate-python.yml') }}
+          key: docker-python-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}
 
       - name: Set up Layout cache for generated files
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.0
         with:
           path: |
             offsets-python
-          key: python-layout-${{ runner.os }}-${{ hashFiles('.github/workflows/generate-python.yml') }}
-          restore-keys: |
-            python-layout-${{ runner.os }}-
+          key: python-generated-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}
 
       - name: Generate python Offsets for ${{ matrix.python-version }}
         run: |
@@ -106,7 +105,7 @@ jobs:
   create-branch:
     runs-on: ubuntu-latest
     needs: generate
-    if: github.event.pull_request.merged == true
+    if: github.event_name != 'pull_request'
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1
@@ -125,11 +124,11 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Set up Go tool cache
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.0
         with:
           path: |
             ~/.devbox/go
-          key: devbox-go-tools.cache-${{ runner.arch }}-${{ hashFiles('Makefile') }}
+          key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
 
       - name: Build
         run: make build

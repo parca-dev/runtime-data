@@ -1,7 +1,7 @@
 name: Integration Tests
 
 on:
-  workflow_call: null
+  workflow_call:
   workflow_run:
     workflows: ["Test"]
     types:
@@ -9,9 +9,8 @@ on:
   push:
     branches:
       - main
+      - release-*
   pull_request:
-    branches:
-      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -20,7 +19,6 @@ concurrency:
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1
@@ -45,7 +43,7 @@ jobs:
         run: ./scripts/download/python.sh
 
       - name: Set up cache for test runtimes
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.0
         with:
           path: |
             ./tests/integration/binaries

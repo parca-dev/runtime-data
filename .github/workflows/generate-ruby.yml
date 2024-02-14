@@ -97,7 +97,7 @@ jobs:
   create-branch:
     runs-on: ubuntu-latest
     needs: generate
-    if: github.event.pull_request.merged == true
+    if: github.event_name != 'pull_request'
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1

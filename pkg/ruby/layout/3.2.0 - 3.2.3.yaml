@@ -1,0 +1,11 @@
+cfp_offset: 16
+control_frame_t_sizeof: 64
+ec_offset: 520
+label_offset: 16
+line_info_size_offset: 128
+line_info_table_offset: 112
+lineno_offset: 0
+main_thread_offset: 40
+path_flavour: 1
+vm_offset: 0
+vm_size_offset: 8

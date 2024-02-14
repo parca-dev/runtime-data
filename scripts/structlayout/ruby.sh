@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# This script helps to run structlayout for specified ruby versions for integration tests.
+# This script helps to run structlayout for specified ruby layout for integration tests.
 
 ruby_versions=(
     2.6.0

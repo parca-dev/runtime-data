@@ -9,7 +9,7 @@ import (
 
 const doesNotExist = -1
 
-func DataMapForVersion(v string) runtimedata.LayoutMap {
+func DataMapForLayout(v string) runtimedata.LayoutMap {
 	// Keys are version constraints defined in semver format,
 	// check github.com/Masterminds/semver for more details.
 	pythonVersions := map[*semver.Constraints]runtimedata.LayoutMap{

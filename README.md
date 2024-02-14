@@ -17,12 +17,12 @@ import (
 )
 
 func main() {
-    versions, err := python.GetVersions()
+    layouts, err := python.GetLayouts()
     if err != nil {
-        return fmt.Errorf("get python versions: %w", err)
+        return fmt.Errorf("get python layouts: %w", err)
     }
 
-    fmt.Println(versions)
+    fmt.Println(layouts)
 }
 ```
 
@@ -38,12 +38,12 @@ import (
 )
 
 func main() {
-    versions, err := ruby.GetVersions()
+    layouts, err := ruby.GetLayouts()
     if err != nil {
-        return fmt.Errorf("get ruby versions: %w", err)
+        return fmt.Errorf("get ruby layouts: %w", err)
     }
 
-    fmt.Println(versions)
+    fmt.Println(layouts)
 }
 ```
 

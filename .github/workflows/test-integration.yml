@@ -36,11 +36,8 @@ jobs:
         with:
           direnvVersion: 2.32.3
 
-      - name: Download Ruby Runtimes
-        run: ./scripts/download/ruby.sh
-
-      - name: Download Python Runtimes
-        run: ./scripts/download/python.sh
+      - name: Build
+        run: make build
 
       - name: Set up cache for test runtimes
         uses: actions/cache@v4.0.0

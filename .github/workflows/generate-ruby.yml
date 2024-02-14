@@ -137,6 +137,7 @@ jobs:
 
       - name: Merge the layout files
         run: |
+          rm pkg/ruby/layout/*
           ./mergelayout -o pkg/ruby/layout offsets-ruby/layout/ruby_*.yaml
 
       # If there are no changes (i.e. no diff exists with the checked-out base branch),

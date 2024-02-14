@@ -144,6 +144,8 @@ jobs:
 
       - name: Merge the layout files
         run: |
+          rm pkg/python/layout/*
+          rm pkg/python/initialstate/*
           ./mergelayout -o pkg/python/layout offsets-python/layout/python_*.yaml
           ./mergelayout -o pkg/python/initialstate offsets-python/initialstate/python_*.yaml
 

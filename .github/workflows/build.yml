@@ -40,7 +40,7 @@ jobs:
         with:
           path: |
             ~/.devbox/go
-          key: devbox-go-tools.cache-${{ runner.arch }}-${{ hashFiles('Makefile') }}
+          key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
 
       - name: Check
         run: make check

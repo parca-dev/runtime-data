@@ -17,8 +17,22 @@
 set -euo pipefail
 
 # This script helps to merge structlayout outputs in specified directory for integration tests.
-rm -f pkg/python/layout/*.yaml
-./mergelayout -o pkg/python/layout 'tmp/python/layout/python_*.yaml'
 
-rm -f pkg/python/initialstate/*.yaml
-./mergelayout -o pkg/python/initialstate 'tmp/python/initialstate/python_*.yaml'
+ARCH=${ARCH}
+target_archs=(
+    amd64
+    arm64
+)
+if [ -n "${ARCH}" ]; then
+    target_archs=("${ARCH}")
+fi
+
+rm -rf pkg/python/layout
+rm -rf pkg/python/initialstate
+for arch in "${target_archs[@]}"; do
+    mkdir -p pkg/python/layout/"${arch}"
+    ./mergelayout -o pkg/python/layout/"${arch}" tmp/python/"${arch}"/layout/'python_*.yaml'
+
+    mkdir -p pkg/python/initialstate"/${arch}"
+    ./mergelayout -o pkg/python/initialstate/"${arch}" tmp/python/"${arch}"/initialstate/'python_*.yaml'
+done

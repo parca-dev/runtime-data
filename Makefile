@@ -58,12 +58,14 @@ tagalign:
 	go run github.com/4meepo/tagalign/cmd/tagalign@latest -fix -sort ./...
 
 .PHONY: test
-test: generate
+test: build
 	go test ./...
 
 .PHONY: test/integration
-test/integration: generate
+test/integration: build
+	@echo "Make sure to run 'generate' if any generation code has changed"
 	go test -tags=integration ./tests/integration/...
+
 
 .PHONY: test/integration/update
 test/integration/update:

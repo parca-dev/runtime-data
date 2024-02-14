@@ -16,6 +16,7 @@ import (
 	"embed"
 	"errors"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -24,8 +25,8 @@ import (
 )
 
 const (
-	layouts      = "layout"
-	initialState = "initialstate"
+	layoutDir       = "layout"
+	initialStateDir = "initialstate"
 )
 
 type Key struct {
@@ -34,7 +35,7 @@ type Key struct {
 }
 
 var (
-	//go:embed layout/*.yaml
+	//go:embed layout/*/*.yaml
 	generatedLayouts embed.FS
 	//go:embed initialstate/*
 	generatedState embed.FS
@@ -54,7 +55,7 @@ func init() {
 func loadLayouts() (map[Key]*Layout, error) {
 	var err error
 	once.Do(func() {
-		entries, err := generatedLayouts.ReadDir(layouts)
+		entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, runtime.GOARCH))
 		if err != nil {
 			return
 		}
@@ -64,7 +65,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 				continue
 			}
 			var data []byte
-			data, err = generatedLayouts.ReadFile(filepath.Join(layouts, entry.Name()))
+			data, err = generatedLayouts.ReadFile(filepath.Join(layoutDir, runtime.GOARCH, entry.Name()))
 			if err != nil {
 				return
 			}
@@ -88,6 +89,44 @@ func loadLayouts() (map[Key]*Layout, error) {
 		}
 	})
 	return structLayouts, err
+}
+
+func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
+	entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, arch))
+	if err != nil {
+		return Key{}, nil, err
+	}
+	var i int
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		var data []byte
+		data, err = generatedLayouts.ReadFile(filepath.Join(layoutDir, arch, entry.Name()))
+		if err != nil {
+			return Key{}, nil, err
+		}
+		ext := filepath.Ext(entry.Name())
+		// Filter out non-yaml files.
+		if ext != ".yaml" && ext != ".yml" {
+			continue
+		}
+		var lyt Layout
+		if err = yaml.Unmarshal(data, &lyt); err != nil {
+			return Key{}, nil, err
+		}
+		rawConstraint := strings.TrimSuffix(entry.Name(), ext)
+		constr, err := semver.NewConstraint(rawConstraint)
+		if err != nil {
+			return Key{}, nil, err
+		}
+		if constr.Check(v) {
+			key := Key{index: i, constraint: constr.String()}
+			return key, &lyt, nil
+		}
+		i++
+	}
+	return Key{}, nil, errors.New("not found")
 }
 
 // GetLayout returns the matching layout for the given version.
@@ -119,7 +158,7 @@ func GetLayouts() (map[Key]*Layout, error) {
 
 // loadInitialState loads the initial state for the supported versions.
 func loadInitialState() (map[Key]*InitialState, error) {
-	entries, err := generatedState.ReadDir(initialState)
+	entries, err := generatedState.ReadDir(filepath.Join(initialStateDir, runtime.GOARCH))
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +167,7 @@ func loadInitialState() (map[Key]*InitialState, error) {
 		if entry.IsDir() {
 			continue
 		}
-		data, err := generatedState.ReadFile(filepath.Join(initialState, entry.Name()))
+		data, err := generatedState.ReadFile(filepath.Join(initialStateDir, runtime.GOARCH, entry.Name()))
 		if err != nil {
 			return nil, err
 		}
@@ -150,6 +189,41 @@ func loadInitialState() (map[Key]*InitialState, error) {
 		initialStates[key] = &initState
 	}
 	return initialStates, nil
+}
+
+func getInitialStateForArch(v *semver.Version, arch string) (Key, *InitialState, error) {
+	entries, err := generatedState.ReadDir(filepath.Join(initialStateDir, arch))
+	if err != nil {
+		return Key{}, nil, err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		data, err := generatedState.ReadFile(filepath.Join(initialStateDir, arch, entry.Name()))
+		if err != nil {
+			return Key{}, nil, err
+		}
+		ext := filepath.Ext(entry.Name())
+		// Filter out non-yaml files.
+		if ext != ".yaml" && ext != ".yml" {
+			continue
+		}
+		var initState InitialState
+		if err := yaml.Unmarshal(data, &initState); err != nil {
+			return Key{}, nil, err
+		}
+		rawConstraint := strings.TrimSuffix(entry.Name(), ext)
+		constr, err := semver.NewConstraint(rawConstraint)
+		if err != nil {
+			return Key{}, nil, err
+		}
+		if constr.Check(v) {
+			key := Key{constraint: constr.String()}
+			return key, &initState, nil
+		}
+	}
+	return Key{}, nil, errors.New("not found")
 }
 
 // GetInitialState returns the initial state for the given version.

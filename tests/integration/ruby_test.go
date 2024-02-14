@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -51,7 +52,7 @@ func TestRubyIntegration(t *testing.T) {
 				t.Fatalf("ruby.GenerateDataMap(%s) = %v", version, err)
 			}
 
-			input := fmt.Sprintf("%s/libruby.so.%s", TargetDirRuby, version)
+			input := fmt.Sprintf("%s/%s/libruby.so.%s", TargetDirRuby, runtime.GOARCH, version)
 
 			f, err := elf.Open(input)
 			if err != nil {

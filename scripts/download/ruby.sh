@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+set -euo pipefail
+
 # This script helps to download ruby runtimes using container images for integration tests.
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}

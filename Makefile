@@ -3,24 +3,20 @@ bootstrap:
 	curl -fsSL https://get.jetpack.io/devbox | bash
 	curl -sfL https://direnv.net/install.sh | bash
 
-.PHONY: dirs
-dirs:
-	mkdir -p pkg/ruby/layout
-	mkdir -p pkg/python/layout
-	mkdir -p pkg/python/initialstate
+GO_SRC := $(shell find pkg -type f -name '*.go')
 
-structlayout: cmd/structlayout/structlayout.go
+structlayout: cmd/structlayout/structlayout.go $(filter-out *_test.go,$(GO_SRC))
 	go build -o $@ $<
 
-mergelayout: cmd/mergelayout/mergelayout.go
+mergelayout: cmd/mergelayout/mergelayout.go $(filter-out *_test.go,$(GO_SRC))
 	go build -o $@ $<
 
 .PHONY: build
-build: dirs structlayout mergelayout
+build: structlayout mergelayout
 	go build ./...
 
 .PHONY: generate
-generate: generate/python generate/ruby
+generate: build generate/python generate/ruby
 
 .PHONY: generate/python
 generate/python:
@@ -62,7 +58,7 @@ tagalign:
 	go run github.com/4meepo/tagalign/cmd/tagalign@latest -fix -sort ./...
 
 .PHONY: test
-test: test
+test: generate
 	go test ./...
 
 .PHONY: test/integration

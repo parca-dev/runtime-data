@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+set -euo pipefail
+
 # This script helps to merge structlayout outputs in specified directory for integration tests.
 rm -f pkg/ruby/layout/*.yaml
 ./mergelayout -o pkg/ruby/layout 'tmp/ruby/layout/ruby_*.yaml'

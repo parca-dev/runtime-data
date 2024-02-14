@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+set -euo pipefail
+
 # This script helps to download python runtimes using container images for integration tests.
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}

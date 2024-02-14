@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+set -euo pipefail
+
 # This script helps to run structlayout for specified ruby layout for integration tests.
 
 ruby_versions=(

@@ -104,10 +104,9 @@ jobs:
           path: offsets-python
           retention-days: 1
 
-  create-branch:
+  merge-and-create-branch:
     runs-on: ubuntu-latest
     needs: generate
-    if: github.event_name != 'pull_request'
     steps:
       - name: Check out the code
         uses: actions/checkout@v4.1.1
@@ -140,20 +139,25 @@ jobs:
           path: offsets-python
           merge-multiple: true
 
-      - name: Merge offsets
+      - name: Print the layout files
+        run:  tree offsets-python
+
+      - name: Merge the layout files
         run: |
-          ls -al offsets-python
-          ./mergelayout -o pkg/python/versions offsets-python/python_*.yaml
+          ./mergelayout -o pkg/python/layout offsets-python/layout/python_*.yaml
+          ./mergelayout -o pkg/python/initialstate offsets-python/initialstate/python_*.yaml
 
       # If there are no changes (i.e. no diff exists with the checked-out base branch),
       # no pull request will be created and the action exits silently.
       - name: Create a pull-request
+        if: github.event_name != 'pull_request'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: update python layouts"
           title: "chore: Update Python layouts"
           branch: update-python-offsets-${{ github.run_number }}
+          add-paths: pkg/python/layout, pkg/python/initialstate
           base: main
           labels: chore
           draft: false

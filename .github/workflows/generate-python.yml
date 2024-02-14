@@ -1,10 +1,6 @@
 name: Generate Python
 on:
   workflow_call:
-  workflow_run:
-    workflows: ["Build"]
-    types:
-      - completed
   push:
     branches:
       - main
@@ -38,7 +34,7 @@ jobs:
         arch: [amd64, arm64]
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.8.0
@@ -54,7 +50,7 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Set up Go tool cache
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4
         with:
           path: ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
@@ -67,19 +63,14 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
 
-      - name: Set up container image for generate
-        uses: ScribeMD/docker-cache@0.3.7
+      - name: Set up cache for downloaded files
+        uses: actions/cache@v4
         with:
-          key: docker-python-${{ runner.os }}-${{ matrix.arch }}
-
-      - name: Set up Layout cache for generated files
-        uses: actions/cache@v4.0.0
-        with:
-          path: offsets-python
-          key: python-generated-${{ runner.os }}-${{ matrix.arch }}
+          path: python-binaries
+          key: python-downloaded-${{ runner.os }}-${{ matrix.arch }}
           restore-keys: |
-            python-generated-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.python-version }}
-            python-generated-${{ runner.os }}-${{ matrix.arch }}
+            python-downloaded-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.python-version }}
+            python-downloaded-${{ runner.os }}-${{ matrix.arch }}
 
       - name: Generate Python Offsets for ${{ matrix.python-version }} on ${{ matrix.arch }}
         run: |
@@ -114,7 +105,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.8.0
@@ -130,7 +121,7 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Set up Go tool cache
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4
         with:
           path: ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}

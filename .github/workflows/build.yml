@@ -35,8 +35,7 @@ jobs:
       - name: Set up Go tool cache
         uses: actions/cache@v4.0.0
         with:
-          path: |
-            ~/.devbox/go
+          path: ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
 
       - name: Check

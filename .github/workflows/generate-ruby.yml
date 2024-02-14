@@ -55,8 +55,7 @@ jobs:
       - name: Set up Go tool cache
         uses: actions/cache@v4.0.0
         with:
-          path: |
-            ~/.devbox/go
+          path: ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
 
       - name: Build
@@ -65,14 +64,16 @@ jobs:
       - name: Set up container image for generate
         uses: ScribeMD/docker-cache@0.3.7
         with:
-          key: docker-ruby-${{ runner.os }}-${{ runner.arch }}-${{ matrix.ruby-version }}
+          key: docker-ruby-${{ runner.os }}-${{ runner.arch }}
 
       - name: Set up Layout cache for generated files
         uses: actions/cache@v4.0.0
         with:
-          path: |
-            offsets-ruby
-          key: ruby-generated-${{ runner.os }}-${{ runner.arch }}-${{ matrix.python-version }}
+          path: offsets-ruby
+          key: ruby-generated-${{ runner.os }}-${{ runner.arch }}
+          restore-keys: |
+            ruby-generated-${{ runner.os }}-${{ runner.arch }}-${{ matrix.ruby-version }}
+            ruby-generated-${{ runner.os }}-${{ runner.arch }}
 
       - name: Generate Ruby Offsets for ${{ matrix.ruby-version }}
         run: |
@@ -120,8 +121,7 @@ jobs:
       - name: Set up Go tool cache
         uses: actions/cache@v4.0.0
         with:
-          path: |
-            ~/.devbox/go
+          path: ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
 
       - name: Build

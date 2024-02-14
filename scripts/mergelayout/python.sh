@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 
+set -euo pipefail
+
 # This script helps to merge structlayout outputs in specified directory for integration tests.
-rm -f pkg/python/versions/*.yaml
-./mergelayout -o pkg/python/versions 'tmp/python/python_*.yaml'
+rm -f pkg/python/layout/*.yaml
+./mergelayout -o pkg/python/layout 'tmp/python/layout/python_*.yaml'
+
+rm -f pkg/python/initialstate/*.yaml
+./mergelayout -o pkg/python/initialstate 'tmp/python/initialstate/python_*.yaml'

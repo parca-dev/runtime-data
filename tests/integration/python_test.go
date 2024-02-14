@@ -42,9 +42,9 @@ func TestPythonIntegration(t *testing.T) {
 		t.Run(version, func(t *testing.T) {
 			t.Parallel()
 
-			layoutMap := python.DataMapForVersion(version)
+			layoutMap := python.DataMapForLayout(version)
 			if layoutMap == nil {
-				t.Fatalf("python.DataMapForVersion(%s) = nil", version)
+				t.Fatalf("python.DataMapForLayout(%s) = nil", version)
 			}
 
 			dm, err := datamap.New(layoutMap)
@@ -53,7 +53,7 @@ func TestPythonIntegration(t *testing.T) {
 			}
 
 			parts := strings.Split(version, ".")
-			matches, err := filepath.Glob(fmt.Sprintf("%s/libpython%s.%s*.so.1.0", TargetDirPython, parts[0], parts[1]))
+			matches, err := filepath.Glob(fmt.Sprintf("%s/%s/libpython%s.%s*.so.1.0", TargetDirPython, version, parts[0], parts[1]))
 			if err != nil {
 				t.Fatalf("filepath.Glob() = %v", err)
 			}

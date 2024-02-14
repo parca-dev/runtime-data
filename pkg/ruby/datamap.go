@@ -7,7 +7,7 @@ import (
 	"github.com/parca-dev/runtime-data/pkg/version"
 )
 
-func DataMapForVersion(v string) runtimedata.LayoutMap {
+func DataMapForLayout(v string) runtimedata.LayoutMap {
 	// Keys are version constraints defined in semver format,
 	// check github.com/Masterminds/semver for more details.
 	rubyVersions := map[*semver.Constraints]runtimedata.LayoutMap{

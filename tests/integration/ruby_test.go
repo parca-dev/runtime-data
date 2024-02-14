@@ -41,9 +41,9 @@ func TestRubyIntegration(t *testing.T) {
 		t.Run(version, func(t *testing.T) {
 			t.Parallel()
 
-			layoutMap := ruby.DataMapForVersion(version)
+			layoutMap := ruby.DataMapForLayout(version)
 			if layoutMap == nil {
-				t.Fatalf("ruby.DataMapForVersion(%s) = nil", version)
+				t.Fatalf("ruby.DataMapForLayout(%s) = nil", version)
 			}
 
 			dm, err := datamap.New(layoutMap)

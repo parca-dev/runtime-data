@@ -19,12 +19,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestGetVersions(t *testing.T) {
-	versions, err := loadVersionLayouts()
+func TestGetLayouts(t *testing.T) {
+	layouts, err := loadLayouts()
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(versions)
+	t.Log(layouts)
 }
 
 func TestGetLayout(t *testing.T) {
@@ -155,8 +155,101 @@ func TestGetLayout(t *testing.T) {
 				t.Errorf("GetLayout() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(Layout{})); diff != "" {
+			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(Layout{})); diff != "" {
 				t.Errorf("GetLayout() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGetInitialState(t *testing.T) {
+	tests := []struct {
+		name    string
+		version string
+		want    *InitialState
+		wantErr bool
+	}{
+		{
+			name:    "2.7.15",
+			version: "2.7.15",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "3.3.7",
+			version: "3.3.7",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "3.6.6",
+			version: "3.6.6",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "3.7.2",
+			version: "3.7.2",
+			want: &InitialState{
+				InterpreterHead:    24,
+				ThreadStateCurrent: 1392,
+			},
+		},
+		{
+			name:    "3.7.4",
+			version: "3.7.4",
+			want: &InitialState{
+				InterpreterHead:    24,
+				ThreadStateCurrent: 1480,
+			},
+		},
+		{
+			name:    "3.8.0",
+			version: "3.8.0",
+			want: &InitialState{
+				InterpreterHead:    32,
+				ThreadStateCurrent: 1368,
+			},
+		},
+		{
+			name:    "3.9.6",
+			version: "3.9.6",
+			want: &InitialState{
+				InterpreterHead:    32,
+				ThreadStateCurrent: 568,
+			},
+		},
+		{
+			name:    "3.10.0",
+			version: "3.10.0",
+			want: &InitialState{
+				InterpreterHead:    32,
+				ThreadStateCurrent: 568,
+			},
+		},
+		{
+			name:    "3.11.0",
+			version: "3.11.0",
+			want: &InitialState{
+				InterpreterHead:    40,
+				ThreadStateCurrent: 576,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v, err := semver.StrictNewVersion(tt.version)
+			if err != nil {
+				t.Errorf("StrictNewVersion() error = %v", err)
+				return
+			}
+			_, got, err := GetInitialState(v)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetInitialState(%s) error = %v, wantErr %v", tt.name, err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(InitialState{})); diff != "" {
+				t.Errorf("GetInitialState(%s) mismatch (-want +got):\n%s", tt.name, diff)
 			}
 		})
 	}

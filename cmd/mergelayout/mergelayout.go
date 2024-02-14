@@ -79,14 +79,9 @@ func main() {
 	logger.Info("done", "output directory", outputDir)
 }
 
-type layoutWithVersion struct {
-	Version runtimedata.Version `yaml:"version"`
-	Layout  map[string]any      `yaml:"layout"`
-}
-
 func mergeLayoutFiles(logger *slog.Logger, inputFiles []string, output string) error {
 	// Read all the input files and store them in a map with the version as the key.
-	versionedLayouts := map[runtimedata.Version]*layoutWithVersion{}
+	versionedLayouts := map[runtimedata.Version]*runtimedata.DataWithVersion{}
 	for _, file := range inputFiles {
 		logger.Info("reading file", "file", file)
 		data, err := os.ReadFile(file)
@@ -94,7 +89,7 @@ func mergeLayoutFiles(logger *slog.Logger, inputFiles []string, output string) e
 			return err
 		}
 
-		var withVersion layoutWithVersion
+		var withVersion runtimedata.DataWithVersion
 		if err := yaml.Unmarshal(data, &withVersion); err != nil {
 			return err
 		}
@@ -130,15 +125,15 @@ func mergeLayoutFiles(logger *slog.Logger, inputFiles []string, output string) e
 	)
 	for _, v := range versionKeys {
 		currentVersion := convertVersion(v)
-		layout := versionedLayouts[v].Layout
+		data := versionedLayouts[v].Data
 		if minVersion == nil {
 			minVersion = currentVersion
 			maxVersion = currentVersion
-			currentLayout = layout
+			currentLayout = data
 			continue
 		}
 
-		if reflect.DeepEqual(currentLayout, layout) {
+		if reflect.DeepEqual(currentLayout, data) {
 			maxVersion = currentVersion
 			continue
 		}
@@ -146,7 +141,7 @@ func mergeLayoutFiles(logger *slog.Logger, inputFiles []string, output string) e
 		addVersionRange()
 		minVersion = currentVersion
 		maxVersion = currentVersion
-		currentLayout = layout
+		currentLayout = data
 	}
 
 	// Add the last version range if it's not there already.

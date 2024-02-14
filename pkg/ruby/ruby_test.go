@@ -19,12 +19,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestGetVersions(t *testing.T) {
-	versions, err := loadVersionLayouts()
+func TestGetLayouts(t *testing.T) {
+	layouts, err := loadLayouts()
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(versions)
+	t.Log(layouts)
 }
 
 func TestGetLayout(t *testing.T) {
@@ -104,7 +104,7 @@ func TestGetLayout(t *testing.T) {
 				t.Errorf("GetLayout() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := cmp.Diff(*got, *tt.want, cmp.AllowUnexported(Layout{})); diff != "" {
+			if diff := cmp.Diff(*tt.want, *got, cmp.AllowUnexported(Layout{})); diff != "" {
 				t.Errorf("GetLayout() mismatch (-want +got):\n%s", diff)
 			}
 		})

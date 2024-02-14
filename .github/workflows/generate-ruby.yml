@@ -12,7 +12,6 @@ on:
       - release-*
     paths:
       - ".github/workflows/generate-ruby.yml"
-  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}

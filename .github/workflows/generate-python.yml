@@ -11,7 +11,6 @@ on:
       - release
     paths:
       - ".github/workflows/generate-python.yml"
-  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}

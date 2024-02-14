@@ -134,7 +134,9 @@ jobs:
           merge-multiple: true
 
       - name: Merge offsets
-        run: ./mergelayout -o pkg/ruby/versions offsets-ruby
+        run: |
+          ls -al offsets-ruby
+          ./mergelayout -o pkg/ruby/versions offsets-ruby/ruby_*.yaml
 
       # If there are no changes (i.e. no diff exists with the checked-out base branch),
       # no pull request will be created and the action exits silently.

@@ -141,7 +141,9 @@ jobs:
           merge-multiple: true
 
       - name: Merge offsets
-        run: ./mergelayout -o pkg/python/versions offsets-python
+        run: |
+          ls -al offsets-python
+          ./mergelayout -o pkg/python/versions offsets-python/python_*.yaml
 
       # If there are no changes (i.e. no diff exists with the checked-out base branch),
       # no pull request will be created and the action exits silently.

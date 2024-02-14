@@ -65,7 +65,7 @@ jobs:
       - name: Set up container image for generate
         uses: ScribeMD/docker-cache@0.3.7
         with:
-          key: docker-ruby-${{ runner.os }}-${{ runner.arch }}-${{ matrix.ruby-version }
+          key: docker-ruby-${{ runner.os }}-${{ runner.arch }}-${{ matrix.ruby-version }}
 
       - name: Set up Layout cache for generated files
         uses: actions/cache@v4.0.0

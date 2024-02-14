@@ -38,7 +38,7 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Set up Go tool cache
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.0
         with:
           path: |
             ~/.devbox/go

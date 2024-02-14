@@ -44,7 +44,7 @@ jobs:
         run: ./scripts/download/python.sh
 
       - name: Set up cache for test runtimes
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4.0.0
         with:
           path: |
             ./tests/integration/binaries

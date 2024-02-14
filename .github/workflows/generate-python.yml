@@ -102,7 +102,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           if-no-files-found: ignore
-          name: python-${{ matrix-arch }}-${{ matrix.python-version }}
+          name: python-${{ matrix.arch }}-${{ matrix.python-version }}
           path: offsets-python
           retention-days: 1
 

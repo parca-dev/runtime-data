@@ -1,11 +1,7 @@
 name: Generate Ruby
 
 on:
-  workflow_call: null
-  workflow_run:
-    workflows: ["Build"]
-    types:
-      - completed
+  workflow_call:
   push:
     branches:
       - main
@@ -35,7 +31,7 @@ jobs:
         arch: [amd64, arm64]
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
 
       - name: Install devbox
         uses: jetpack-io/devbox-install-action@v0.8.0
@@ -51,7 +47,7 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Set up Go tool cache
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4
         with:
           path: ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
@@ -59,24 +55,19 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Set up container image for generate
-        uses: ScribeMD/docker-cache@0.3.7
-        with:
-          key: docker-ruby-${{ runner.os }}-${{ matrix.arch }}
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/amd64,linux/arm64
 
-      - name: Set up Layout cache for generated files
-        uses: actions/cache@v4.0.0
+      - name: Set up cache for downloaded files
+        uses: actions/cache@v4
         with:
-          path: offsets-ruby
-          key: ruby-generated-${{ runner.os }}-${{ matrix.arch }}
+          path: ruby-binaries
+          key: ruby-downloaded-${{ runner.os }}-${{ matrix.arch }}
           restore-keys: |
-            ruby-generated-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.ruby-version }}
-            ruby-generated-${{ runner.os }}-${{ matrix.arch }}
+            ruby-downloaded-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.ruby-version }}
+            ruby-downloaded-${{ runner.os }}-${{ matrix.arch }}
 
       - name: Generate Ruby Offsets for ${{ matrix.ruby-version }} on ${{ matrix.arch }}
         run: |
@@ -124,7 +115,7 @@ jobs:
           direnvVersion: 2.32.3
 
       - name: Set up Go tool cache
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4
         with:
           path: ~/.devbox/go
           key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}

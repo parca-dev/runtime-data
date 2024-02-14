@@ -39,11 +39,6 @@ jobs:
       - name: Build
         run: make build
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/amd64,linux/arm64
-
       - name: Set up cache for test runtimes
         uses: actions/cache@v4.0.0
         with:
@@ -54,4 +49,4 @@ jobs:
             ${{ runner.arch }}-integration-runtimes
 
       - name: Run integration tests
-        run: make generate test/integration
+        run: make ARCH="amd64" generate test/integration

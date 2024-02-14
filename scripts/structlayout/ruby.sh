@@ -32,10 +32,15 @@ ruby_versions=(
     3.2.1
 )
 
+ARCH=${ARCH}
 target_archs=(
     amd64
     arm64
 )
+if [ -n "${ARCH}" ]; then
+    target_archs=("${ARCH}")
+fi
+
 
 mkdir -p tmp/ruby
 for ruby_version in "${ruby_versions[@]}"; do

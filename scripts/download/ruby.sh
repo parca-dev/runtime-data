@@ -20,6 +20,7 @@ set -euo pipefail
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}
 TARGET_DIR=${TARGET_DIR:-tests/integration/binaries/ruby}
+ARCH=${ARCH}
 
 ruby_versions=(
     2.6.0
@@ -39,6 +40,9 @@ target_archs=(
     amd64
     arm64
 )
+if [ -n "${ARCH}" ]; then
+    target_archs=("${ARCH}")
+fi
 
 # Check if CONTAINER_RUNTIME is installed.
 if ! command -v "${CONTAINER_RUNTIME}" &>/dev/null; then

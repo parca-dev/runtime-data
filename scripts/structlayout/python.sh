@@ -39,10 +39,14 @@ python_versions=(
     3.11.0 # bugfix
 )
 
+ARCH=${ARCH}
 target_archs=(
     amd64
     arm64
 )
+if [ -n "${ARCH}" ]; then
+    target_archs=("${ARCH}")
+fi
 
 mkdir -p tmp/python/
 for python_version in "${python_versions[@]}"; do

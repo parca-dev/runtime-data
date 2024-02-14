@@ -1,0 +1,16 @@
+version:
+    major: 2
+    minor: 6
+    patch: 7
+layout:
+    vm_offset: 0
+    vm_size_offset: 8
+    control_frame_t_sizeof: 56
+    cfp_offset: 16
+    label_offset: 16
+    path_flavour: 1
+    line_info_size_offset: 136
+    line_info_table_offset: 120
+    lineno_offset: 0
+    main_thread_offset: 192
+    ec_offset: 32

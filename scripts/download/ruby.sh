@@ -20,7 +20,7 @@ set -euo pipefail
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}
 TARGET_DIR=${TARGET_DIR:-tests/integration/binaries/ruby}
-ARCH=${ARCH}
+ARCH=${ARCH:-""}
 
 ruby_versions=(
     2.6.0

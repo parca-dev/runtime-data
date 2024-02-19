@@ -18,7 +18,7 @@ set -euo pipefail
 
 # This script helps to merge structlayout outputs in specified directory for integration tests.
 
-ARCH=${ARCH}
+ARCH=${ARCH:-""}
 target_archs=(
     amd64
     arm64

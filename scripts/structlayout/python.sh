@@ -39,7 +39,7 @@ python_versions=(
     3.11.0 # bugfix
 )
 
-ARCH=${ARCH}
+ARCH=${ARCH:-""}
 target_archs=(
     amd64
     arm64

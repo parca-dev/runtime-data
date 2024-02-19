@@ -20,7 +20,7 @@ set -euo pipefail
 
 CONTAINER_RUNTIME=${CONTAINER_RUNTIME:-docker}
 TARGET_DIR=${TARGET_DIR:-tests/integration/binaries/python}
-ARCH=${ARCH}
+ARCH=${ARCH:-""}
 
 # https://devguide.python.org/versions/
 python_versions=(

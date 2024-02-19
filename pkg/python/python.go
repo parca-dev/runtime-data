@@ -30,14 +30,14 @@ const (
 )
 
 type Key struct {
-	index      int
-	constraint string
+	Index      int
+	Constraint string
 }
 
 var (
 	//go:embed layout/*/*.yaml
 	generatedLayouts embed.FS
-	//go:embed initialstate/*
+	//go:embed initialstate/*/*.yaml
 	generatedState embed.FS
 
 	structLayouts = map[Key]*Layout{}
@@ -83,7 +83,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 			if err != nil {
 				return
 			}
-			key := Key{index: i, constraint: constr.String()}
+			key := Key{Index: i, Constraint: constr.String()}
 			structLayouts[key] = &lyt
 			i++
 		}
@@ -121,7 +121,7 @@ func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
 			return Key{}, nil, err
 		}
 		if constr.Check(v) {
-			key := Key{index: i, constraint: constr.String()}
+			key := Key{Index: i, Constraint: constr.String()}
 			return key, &lyt, nil
 		}
 		i++
@@ -136,7 +136,7 @@ func GetLayout(v *semver.Version) (Key, *Layout, error) {
 		return Key{}, nil, err
 	}
 	for k, l := range layouts {
-		constr, err := semver.NewConstraint(k.constraint)
+		constr, err := semver.NewConstraint(k.Constraint)
 		if err != nil {
 			return k, nil, err
 		}
@@ -185,7 +185,7 @@ func loadInitialState() (map[Key]*InitialState, error) {
 		if err != nil {
 			return nil, err
 		}
-		key := Key{constraint: constr.String()}
+		key := Key{Constraint: constr.String()}
 		initialStates[key] = &initState
 	}
 	return initialStates, nil
@@ -219,7 +219,7 @@ func getInitialStateForArch(v *semver.Version, arch string) (Key, *InitialState,
 			return Key{}, nil, err
 		}
 		if constr.Check(v) {
-			key := Key{constraint: constr.String()}
+			key := Key{Constraint: constr.String()}
 			return key, &initState, nil
 		}
 	}
@@ -233,7 +233,7 @@ func GetInitialState(v *semver.Version) (Key, *InitialState, error) {
 		return Key{}, nil, err
 	}
 	for k, l := range state {
-		constr, err := semver.NewConstraint(k.constraint)
+		constr, err := semver.NewConstraint(k.Constraint)
 		if err != nil {
 			return k, nil, err
 		}

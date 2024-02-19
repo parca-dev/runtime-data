@@ -26,8 +26,8 @@ import (
 )
 
 type Key struct {
-	index      int
-	constraint string
+	Index      int
+	Constraint string
 }
 
 const layoutDir = "layout"
@@ -78,7 +78,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 			if err != nil {
 				return
 			}
-			key := Key{index: i, constraint: constr.String()}
+			key := Key{Index: i, Constraint: constr.String()}
 			structLayouts[key] = &lyt
 			i++
 		}
@@ -93,7 +93,7 @@ func GetLayout(v *semver.Version) (Key, *Layout, error) {
 		return Key{}, nil, err
 	}
 	for k, l := range layouts {
-		constr, err := semver.NewConstraint(k.constraint)
+		constr, err := semver.NewConstraint(k.Constraint)
 		if err != nil {
 			return k, nil, err
 		}

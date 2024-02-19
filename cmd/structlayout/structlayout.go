@@ -41,7 +41,7 @@ func main() {
 
 	fSet.Usage = func() {
 		fmt.Printf("usage: structlayout [flags] <path-to-elf>\n")
-		fmt.Printf("e.g: structlayout -m python -v 3.9.5 /usr/bin/python3.9\n\n")
+		fmt.Printf("e.g: structlayout -r python -v 3.9.5 /usr/bin/python3.9\n\n")
 		fmt.Println("flags:")
 		fSet.PrintDefaults()
 	}

@@ -59,7 +59,7 @@ func TestGetLayout(t *testing.T) {
 				LineInfoSizeOffset:  136,
 				LineInfoTableOffset: 120,
 				LinenoOffset:        0,
-				MainThreadOffset:    40,
+				MainThreadOffset:    32, // 40
 				EcOffset:            520,
 			},
 		},
@@ -73,7 +73,7 @@ func TestGetLayout(t *testing.T) {
 				PathFlavour:         1,
 				LineInfoSizeOffset:  136,
 				LineInfoTableOffset: 120,
-				MainThreadOffset:    40,
+				MainThreadOffset:    32, // 40
 				EcOffset:            520,
 			},
 		},
@@ -87,7 +87,7 @@ func TestGetLayout(t *testing.T) {
 				PathFlavour:         1,
 				LineInfoSizeOffset:  128,
 				LineInfoTableOffset: 112,
-				MainThreadOffset:    40,
+				MainThreadOffset:    32, // 40
 				EcOffset:            520,
 			},
 		},

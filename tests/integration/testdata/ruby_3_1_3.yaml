@@ -10,5 +10,5 @@ path_flavour: 1
 line_info_size_offset: 136
 line_info_table_offset: 120
 lineno_offset: 0
-main_thread_offset: 40
+main_thread_offset: 32
 ec_offset: 520

@@ -191,7 +191,7 @@ func loadInitialState() (map[Key]*InitialState, error) {
 	return initialStates, nil
 }
 
-func getInitialStateForArch(v *semver.Version, arch string) (Key, *InitialState, error) {
+func GetInitialStateForArch(v *semver.Version, arch string) (Key, *InitialState, error) {
 	entries, err := generatedState.ReadDir(filepath.Join(initialStateDir, arch))
 	if err != nil {
 		return Key{}, nil, err

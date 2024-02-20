@@ -325,7 +325,7 @@ func TestGetInitialState(t *testing.T) {
 				t.Errorf("StrictNewVersion() error = %v", err)
 				return
 			}
-			_, got, err := getInitialStateForArch(v, arch)
+			_, got, err := GetInitialStateForArch(v, arch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetInitialState(%s) error = %v, wantErr %v", name, err, tt.wantErr)
 				return

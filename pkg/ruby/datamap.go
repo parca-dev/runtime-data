@@ -62,13 +62,6 @@ type ruby30 struct {
 	EcOffset                   int64 `offsetof:"rb_ractor_struct.threads.running_ec"`
 }
 
-// struct ccan_list_head set; // 16
-// unsigned int cnt; // 4
-// unsigned int blocking_cnt; // 4
-
-// struct rb_ractor_struct *main_ractor; // 8
-// struct rb_thread_struct *main_thread; //
-
 func (r ruby30) Layout() runtimedata.RuntimeData {
 	return &Layout{
 		VMOffset:            r.VMOffset,
@@ -79,9 +72,9 @@ func (r ruby30) Layout() runtimedata.RuntimeData {
 		PathFlavour:         1,
 		LineInfoTableOffset: r.LineInfoTableOffset,
 		LineInfoSizeOffset:  r.LineInfoTableOffset + r.LineInfoIseqInfoSizeOffset,
-		MainThreadOffset:    r.MainThreadOffset,
-		// we want: ruby_current_vm_ptr->ractor->main_thread->ractor(->threads)->running_ec
-		// we have: ruby_current_vm_ptr->ractor->main_thread
-		EcOffset: r.EcOffset,
+		// TODO(kakkoyun): This is a temporary fix, we need to find a better way to get the main thread.
+		// - https://github.com/javierhonduco/rbperf/issues/78
+		MainThreadOffset:    r.MainThreadOffset - 8, 		// ruby_current_vm_ptr->ractor->main_thread
+		EcOffset: r.EcOffset, // ruby_current_vm_ptr->ractor->main_thread->ractor(->threads)->running_ec
 	}
 }

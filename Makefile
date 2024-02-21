@@ -11,12 +11,15 @@ structlayout: cmd/structlayout/structlayout.go $(filter-out *_test.go,$(GO_SRC))
 mergelayout: cmd/mergelayout/mergelayout.go $(filter-out *_test.go,$(GO_SRC))
 	go build -o $@ $<
 
+debdownload: cmd/debdownload/debdownload.go $(filter-out *_test.go,$(GO_SRC))
+	go build -o $@ $<
+
 .PHONY: build
-build: structlayout mergelayout
+build: structlayout mergelayout debdownload
 	go build ./...
 
 .PHONY: generate
-generate: build generate/python generate/ruby
+generate: build generate/python generate/ruby generate/glibc
 
 .PHONY: generate/python
 generate/python:
@@ -29,6 +32,12 @@ generate/ruby:
 	./scripts/download/ruby.sh
 	./scripts/structlayout/ruby.sh
 	./scripts/mergelayout/ruby.sh
+
+.PHONY: generate/glibc
+generate/glibc:
+	./scripts/download/glibc.sh
+	./scripts/structlayout/glibc.sh
+	./scripts/mergelayout/glibc.sh
 
 .PHONY: clean
 clean:
@@ -80,9 +89,12 @@ $(TMPDIR)/structlayout-help.txt: $(TMPDIR) ./cmd/structlayout/structlayout.go
 	go run ./cmd/structlayout/structlayout.go -h > $@ 2>&1
 
 $(TMPDIR)/mergelayout-help.txt: $(TMPDIR) ./cmd/mergelayout/mergelayout.go
-	go run ./cmd/mergelayout/mergelayout.go -h >> $@ 2>&1
+	go run ./cmd/mergelayout/mergelayout.go -h > $@ 2>&1
+
+$(TMPDIR)/debdownload-help.txt: $(TMPDIR) ./cmd/debdownload/debdownload.go
+	go run ./cmd/debdownload/debdownload.go -h > $@ 2>&1
 
 .PHONY: README.md
-README.md: $(TMPDIR)/structlayout-help.txt $(TMPDIR)/mergelayout-help.txt
+README.md: $(TMPDIR)/structlayout-help.txt $(TMPDIR)/mergelayout-help.txt $(TMPDIR)/debdownload-help.txt
 	go run github.com/campoy/embedmd/v2@latest -w README.md
 	devbox generate readme CONTRIBUTING.md

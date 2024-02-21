@@ -92,7 +92,7 @@ Under the `cmd` directory, you can find the following tools:
 [embedmd]:# (tmp/structlayout-help.txt)
 ```txt
 usage: structlayout [flags] <path-to-elf>
-e.g: structlayout -m python -v 3.9.5 /usr/bin/python3.9
+e.g: structlayout -r python -v 3.9.5 /usr/bin/python3.9
 
 flags:
   -o string
@@ -114,17 +114,35 @@ flags:
 [embedmd]:# (tmp/mergelayout-help.txt)
 ```txt
 usage: mergelayout -o outputDir <path-to-layout-files>
-e.g: mergelayout -o /tmp/merged /tmp/python/*.yaml
+e.g: mergelayout -o /tmp/merged '/tmp/python/*.yaml'
 
 flags:
-  -i string
-    	path to struct layout files (shorthand)
-  -input string
-    	path to struct layout files. Can be a glob pattern.
   -o string
     	output directory to write the merged layout file (shorthand)
   -output string
     	output directory to write the merged layout file
+```
+
+### debdownload
+[embedmd]:# (tmp/debdownload-help.txt)
+```txt
+NAME
+  debdownload
+
+FLAGS
+  -o, --output STRING       output directory to write the downloaded deb files
+  -t, --temp-dir STRING     temporary directory to download deb files
+  -u, --url STRING          URL to download deb files from
+  -p, --package STRING      package name to download
+  -a, --arch STRING         architectures to download
+  -c, --constraint STRING   version constraints to download
+
+```
+
+### debuginfofind
+[embedmd]:# (tmp/debuginfofind-help.txt)
+```txt
+cmd/debuginfofind/debuginfofind.go:1:1: expected 'package', found 'EOF'
 ```
 
 ## Acknowledgments

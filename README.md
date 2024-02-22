@@ -100,9 +100,9 @@ flags:
   -output string
     	output directory to write the layout file
   -r string
-    	name of the pre-defined runtime, e.g. python, ruby, libc (shorthand)
+    	name of the pre-defined runtime, e.g. python, ruby, libc, musl (shorthand)
   -runtime string
-    	name of the pre-defined runtime, e.g. python, ruby, libc
+    	name of the pre-defined runtime, e.g. python, ruby, libc, musl
   -v string
     	version of the runtime that the layout to generate, e.g. 3.9.5 (shorthand)
   -version string
@@ -133,6 +133,23 @@ FLAGS
   -o, --output STRING       output directory to write the downloaded deb files
   -t, --temp-dir STRING     temporary directory to download deb files
   -u, --url STRING          URL to download deb files from
+  -p, --package STRING      package name to download
+  -a, --arch STRING         architectures to download
+  -c, --constraint STRING   version constraints to download
+
+```
+
+
+### apkdownload
+[embedmd]:# (tmp/apkdownload-help.txt)
+```txt
+NAME
+  apkdownload
+
+FLAGS
+  -o, --output STRING       output directory to write the downloaded apk files (default: tmp/bin)
+  -t, --temp-dir STRING     temporary directory to download deb files (default: tmp/apk)
+  -u, --url STRING          URL to download apk files from
   -p, --package STRING      package name to download
   -a, --arch STRING         architectures to download
   -c, --constraint STRING   version constraints to download

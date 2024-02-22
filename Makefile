@@ -14,15 +14,18 @@ mergelayout: cmd/mergelayout/mergelayout.go $(filter-out *_test.go,$(GO_SRC))
 debdownload: cmd/debdownload/debdownload.go $(filter-out *_test.go,$(GO_SRC))
 	go build -o $@ $<
 
+apkdownload: cmd/apkdownload/apkdownload.go $(filter-out *_test.go,$(GO_SRC))
+	go build -o $@ $<
+
 debuginfofind: cmd/debuginfofind/debuginfofind.go $(filter-out *_test.go,$(GO_SRC))
 	go build -o $@ $<
 
 .PHONY: build
-build: structlayout mergelayout debdownload debuginfofind
+build: structlayout mergelayout debdownload  apkdownload debuginfofind
 	go build ./...
 
 .PHONY: generate
-generate: build generate/python generate/ruby generate/glibc
+generate: build generate/python generate/ruby generate/glibc generate/musl
 
 .PHONY: generate/python
 generate/python:
@@ -41,6 +44,12 @@ generate/glibc:
 	./scripts/download/glibc.sh
 	./scripts/structlayout/glibc.sh
 	./scripts/mergelayout/glibc.sh
+
+.PHONY: generate/musl
+generate/musl:
+	./scripts/download/musl.sh
+	./scripts/structlayout/musl.sh
+	./scripts/mergelayout/musl.sh
 
 .PHONY: clean
 clean:
@@ -97,10 +106,13 @@ $(TMPDIR)/mergelayout-help.txt: $(TMPDIR) ./cmd/mergelayout/mergelayout.go
 $(TMPDIR)/debdownload-help.txt: $(TMPDIR) ./cmd/debdownload/debdownload.go
 	go run ./cmd/debdownload/debdownload.go -h > $@ 2>&1
 
+$(TMPDIR)/apkdownload-help.txt: $(TMPDIR) ./cmd/apkdownload/apkdownload.go
+	go run ./cmd/apkdownload/apkdownload.go -h > $@ 2>&1
+
 $(TMPDIR)/debuginfofind-help.txt: $(TMPDIR) ./cmd/debuginfofind/debuginfofind.go
 	go run ./cmd/debuginfofind/debuginfofind.go -h > $@ 2>&1
 
 .PHONY: README.md
-README.md: $(TMPDIR)/structlayout-help.txt $(TMPDIR)/mergelayout-help.txt $(TMPDIR)/debdownload-help.txt $(TMPDIR)/debuginfofind-help.txt
+README.md: $(TMPDIR)/structlayout-help.txt $(TMPDIR)/mergelayout-help.txt $(TMPDIR)/debdownload-help.txt $(TMPDIR)/debuginfofind-help.txt $(TMPDIR)/apkdownload-help.txt
 	go run github.com/campoy/embedmd/v2@latest -w README.md
 	devbox generate readme CONTRIBUTING.md

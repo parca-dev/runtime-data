@@ -14,8 +14,11 @@ mergelayout: cmd/mergelayout/mergelayout.go $(filter-out *_test.go,$(GO_SRC))
 debdownload: cmd/debdownload/debdownload.go $(filter-out *_test.go,$(GO_SRC))
 	go build -o $@ $<
 
+debuginfofind: cmd/debuginfofind/debuginfofind.go $(filter-out *_test.go,$(GO_SRC))
+	go build -o $@ $<
+
 .PHONY: build
-build: structlayout mergelayout debdownload
+build: structlayout mergelayout debdownload debuginfofind
 	go build ./...
 
 .PHONY: generate
@@ -94,7 +97,10 @@ $(TMPDIR)/mergelayout-help.txt: $(TMPDIR) ./cmd/mergelayout/mergelayout.go
 $(TMPDIR)/debdownload-help.txt: $(TMPDIR) ./cmd/debdownload/debdownload.go
 	go run ./cmd/debdownload/debdownload.go -h > $@ 2>&1
 
+$(TMPDIR)/debuginfofind-help.txt: $(TMPDIR) ./cmd/debuginfofind/debuginfofind.go
+	go run ./cmd/debuginfofind/debuginfofind.go -h > $@ 2>&1
+
 .PHONY: README.md
-README.md: $(TMPDIR)/structlayout-help.txt $(TMPDIR)/mergelayout-help.txt $(TMPDIR)/debdownload-help.txt
+README.md: $(TMPDIR)/structlayout-help.txt $(TMPDIR)/mergelayout-help.txt $(TMPDIR)/debdownload-help.txt $(TMPDIR)/debuginfofind-help.txt
 	go run github.com/campoy/embedmd/v2@latest -w README.md
 	devbox generate readme CONTRIBUTING.md

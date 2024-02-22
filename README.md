@@ -142,7 +142,12 @@ FLAGS
 ### debuginfofind
 [embedmd]:# (tmp/debuginfofind-help.txt)
 ```txt
-cmd/debuginfofind/debuginfofind.go:1:1: expected 'package', found 'EOF'
+NAME
+  debdownload
+
+FLAGS
+  -d, --debuginfo-dir STRING   directory to write the downloaded debuginfo files
+
 ```
 
 ## Acknowledgments

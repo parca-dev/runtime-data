@@ -1,0 +1,74 @@
+name: Generate musl
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+      - release
+    paths:
+      - ".github/workflows/generate-musl.yml"
+      - "pkg/libc/musl"
+      - "scripts"
+      - "Makefile"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-and-create-branch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Install devbox
+        uses: jetpack-io/devbox-install-action@v0.8.0
+        with:
+          enable-cache: true
+
+      - name: Setup devbox
+        run: devbox run -- echo "done!"
+
+      - name: Load devbox shellenv
+        uses: HatsuneMiku3939/direnv-action@v1
+        with:
+          direnvVersion: 2.32.3
+
+      - name: Set up Go tool cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.devbox/go
+          key: devbox-go-tools.cache-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Build
+        run: make build
+
+      - name: Set up cache for downloaded files
+        uses: actions/cache@v4
+        with:
+          path: workspace-musl
+          key: musl-downloaded-${{ runner.os }}-${{ matrix.arch }}
+          restore-keys: |
+            musl-downloaded-${{ runner.os }}-${{ matrix.arch }}
+
+      - name: Generate musl Offsets
+        run: |
+          TEMP_DIR=workspace-musl make generate/musl
+
+      # If there are no changes (i.e. no diff exists with the checked-out base branch),
+      # no pull request will be created and the action exits silently.
+      - name: Create a pull-request
+        if: github.event_name != 'pull_request'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update musl layouts"
+          title: "chore: Update musl layouts"
+          branch: update-offsets-musl-${{ github.run_number }}
+          add-paths: pkg/libc/musl/layout
+          base: main
+          labels: chore
+          draft: false
+          delete-branch: true

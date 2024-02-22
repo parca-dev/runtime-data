@@ -15,6 +15,7 @@ import (
 
 	"github.com/parca-dev/runtime-data/pkg/datamap"
 	"github.com/parca-dev/runtime-data/pkg/libc/glibc"
+	"github.com/parca-dev/runtime-data/pkg/libc/musl"
 	"github.com/parca-dev/runtime-data/pkg/python"
 	"github.com/parca-dev/runtime-data/pkg/ruby"
 	"github.com/parca-dev/runtime-data/pkg/runtimedata"
@@ -33,8 +34,8 @@ func main() {
 		version        string
 		givenOutputDir string
 	)
-	fSet.StringVar(&runtime, "runtime", "", "name of the pre-defined runtime, e.g. python, ruby, libc")
-	fSet.StringVar(&runtime, "r", "", "name of the pre-defined runtime, e.g. python, ruby, libc (shorthand)")
+	fSet.StringVar(&runtime, "runtime", "", "name of the pre-defined runtime, e.g. python, ruby, libc, musl")
+	fSet.StringVar(&runtime, "r", "", "name of the pre-defined runtime, e.g. python, ruby, libc, musl (shorthand)")
 	fSet.StringVar(&version, "version", "", "version of the runtime that the layout to generate, e.g. 3.9.5")
 	fSet.StringVar(&version, "v", "", "version of the runtime that the layout to generate, e.g. 3.9.5 (shorthand)")
 	fSet.StringVar(&givenOutputDir, "output", "", "output directory to write the layout file")
@@ -74,10 +75,14 @@ func main() {
 			outputDir = "pkg/ruby"
 		}
 	case "glibc":
-		// TODO(kakkoyun): Change depending on the libc implementation. e.g musl, glibc, etc.
 		layoutMap = glibc.DataMapForLayout(version)
 		if outputDir == "" {
 			outputDir = "pkg/libc/glibc/layout"
+		}
+	case "musl":
+		layoutMap = musl.DataMapForLayout(version)
+		if outputDir == "" {
+			outputDir = "pkg/libc/musl/layout"
 		}
 	default:
 		logger.Error("invalid offset map module", "mod", runtime)

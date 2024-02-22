@@ -33,15 +33,27 @@ const (
 	DefaultDebianBaseURL = "http://ftp.debian.org/debian/pool/main"
 
 	// DefaultBaseURL is the default base URL to download deb files from.
-	DefaultBaseURL = DefaultDebianBaseURL
+	DefaultBaseURL = DefaultUbuntuBaseURL
+
+	// FetchListTimeout is the timeout to fetch the list of packages.
+	FetchListTimeout = 10 * time.Second
+
+	// DownloadSinglePackageTimeout is the timeout to download a single package.
+	DownloadSinglePackageTimeout = 30 * time.Second
 )
 
 var (
 	allowedVariants = map[string]struct{}{
-		"":    {}, // main package.
 		"dbg": {},
 		// "dev": {},
 	}
+)
+
+type packageSourceVariant int
+
+const (
+	debian packageSourceVariant = iota
+	ubuntu
 )
 
 func main() {
@@ -89,7 +101,16 @@ func main() {
 		*architectures = []string{"amd64", "arm64"}
 	}
 
-	cli := &cli{logger: logger}
+	var sv packageSourceVariant
+	if strings.Contains(*url, "ubuntu") {
+		sv = ubuntu
+	} else {
+		sv = debian
+	}
+	cli := &cli{
+		logger: logger,
+		sv:     sv,
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -131,6 +152,8 @@ func main() {
 
 type cli struct {
 	logger *slog.Logger
+
+	sv packageSourceVariant
 }
 
 type pkg struct {
@@ -146,7 +169,7 @@ type pkg struct {
 func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []string, versionConstraint string) ([]*pkg, error) {
 	c.logger.Info("listing packages", "url", pkgUrl)
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, FetchListTimeout)
 	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, pkgUrl, nil)
@@ -169,9 +192,19 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 		return nil, fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
-	var matcher = regexp.MustCompile(
-		fmt.Sprintf(`(%s)(-.*)?_(.*)_(%s)\.deb`, pkgName, strings.Join(architectures, "|")),
-	)
+	var matcher *regexp.Regexp
+	switch c.sv {
+	case debian:
+		matcher = regexp.MustCompile(
+			fmt.Sprintf(`(%s)(-.*)?_(.*)_(%s)\.deb`, pkgName, strings.Join(architectures, "|")),
+		)
+	case ubuntu:
+		matcher = regexp.MustCompile(
+			fmt.Sprintf(`(%s)(-.*)?_(.*)-[0-9]ubuntu.*_(%s)\.deb`, pkgName, strings.Join(architectures, "|")),
+		)
+	default:
+		return nil, fmt.Errorf("unsupported package source variant: %d", c.sv)
+	}
 	c.logger.Info("matcher", "pattern", matcher.String())
 
 	packages := map[string]*pkg{}
@@ -185,7 +218,7 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 			for _, a := range n.Attr {
 				if a.Key == "href" {
 					if matches := matcher.FindStringSubmatch(a.Val); len(matches) > 0 {
-						version := semver.MustParse(matches[3])
+						version := semver.MustParse(strings.ReplaceAll(matches[3], "~", "+"))
 						if versionConstraint != "" {
 							match, reasons := mustConstraint(semver.NewConstraint(versionConstraint)).Validate(version)
 							if !match {
@@ -195,8 +228,14 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 							}
 						}
 						variant := strings.TrimPrefix(matches[2], "-")
-						if _, ok := allowedVariants[variant]; !ok {
+						if c.sv == ubuntu && variant == "" {
+							// No need to download the main package for Ubuntu.
 							continue
+						}
+						if variant != "" {
+							if _, ok := allowedVariants[variant]; !ok {
+								continue
+							}
 						}
 						p := &pkg{
 							link:    must(url.JoinPath(pkgUrl, a.Val)),
@@ -251,7 +290,7 @@ func (c *cli) download(ctx context.Context, packages []*pkg, tempDir string) err
 
 		c.logger.Info("downloading package", "link", p.link, "target", target)
 
-		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, DownloadSinglePackageTimeout)
 		defer cancel()
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.link, nil)

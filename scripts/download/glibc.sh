@@ -24,10 +24,8 @@ DEBUGINFO_DIR=${DEBUGINFO_DIR:-tmp/debuginfo}
 PACKAGE_NAME=${PACKAGE_NAME:-libc6}
 
 ./debdownload -u 'http://ftp.debian.org/debian/pool/main/g/glibc/' -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}"
-
-# TODO: Add ubuntu and ubuntu old releases.
-# ./debdownload -u 'http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/' -t tmp/deb -o tmp/bin -p 'libc6'
-# ./debdownload -u 'http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc/' -t tmp/deb -o tmp/bin -p 'libc6'
+./debdownload -u 'http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/' -t tmp/deb -o tmp/bin -p 'libc6'
+./debdownload -u 'http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc/' -t tmp/deb -o tmp/bin -p 'libc6'
 
 convertArch() {
     case $1 in
@@ -40,24 +38,43 @@ convertArch() {
     esac
 }
 
+echo "Extracting debuginfo from $BIN_DIR/$PACKAGE_NAME"
 for arch in $BIN_DIR/$PACKAGE_NAME/*; do
     for version in $arch/*; do
         for variant in $version/*; do
             if [ -d "$variant" ]; then
+                a=$(basename "$arch")
+                v=$(basename "$version")
+                linuxArch=$(convertArch "$(basename "$arch")")
+                if [ $(basename "$variant") == "dbg" ]; then
+                    if [ -d "$variant"/usr/lib/debug/lib ]; then
+                        # ubuntu
+                        dbginfo="$variant"/usr/lib/debug/lib/"$linuxArch"-linux-gnu/libc-"${v%.*}".so
+                        if [ ! -f "$dbginfo" ]; then
+                            dbginfo="$variant"/usr/lib/debug/lib/"$linuxArch"-linux-gnu/libc.so.6
+                        fi
+                        if [ -f "$dbginfo" ]; then
+                            echo "Copying $dbginfo to $DEBUGINFO_DIR/$PACKAGE_NAME/$a/$v/"
+                            dbgTarget="$DEBUGINFO_DIR"/$PACKAGE_NAME/$a/$v/
+                            mkdir -p "$dbgTarget"
+                            cp "$dbginfo" "$dbgTarget"
+                            continue
+                        fi
+                    fi
+                    # debian
+                    continue
+                fi
                 if [ $(basename "$variant") == "main" ]; then
-                    v=$(basename "$version")
-                    linuxArch=$(convertArch "$(basename "$arch")")
                     target="$variant"/lib/"$linuxArch"-linux-gnu/libc-"${v%.*}".so
                     if [ ! -f "$target" ]; then
                         target="$variant"/lib/"$linuxArch"-linux-gnu/libc.so.6
                     fi
-                    dbginfo=$(./debuginfofind -d "$version"/dbg $target)
+                    dbginfo=$(./debuginfofind -d "$version"/dbg $target || true)
                     if [ -n "$dbginfo" ]; then
-                        a=$(basename "$arch")
-                        v=$(basename "$version")
-                        target="$DEBUGINFO_DIR"/$PACKAGE_NAME/$a/$v/
-                        mkdir -p "$target"
-                        cp "$dbginfo" "$target"
+                        dbgTarget="$DEBUGINFO_DIR"/$PACKAGE_NAME/$a/$v/
+                        mkdir -p "$dbgTarget"
+                        cp "$dbginfo" "$dbgTarget"
+                        continue
                     fi
                 fi
             fi

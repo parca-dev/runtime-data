@@ -137,6 +137,8 @@ func (c cli) find(root string, buildID string, f *os.File) (string, error) {
 		return "", errors.New("failed to generate paths")
 	}
 
+	c.logger.Debug("generated paths", "paths", files)
+
 	var found string
 	for _, file := range files {
 		_, err := os.Stat(file)

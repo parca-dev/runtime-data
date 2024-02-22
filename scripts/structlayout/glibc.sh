@@ -16,8 +16,9 @@
 
 set -euo pipefail
 
-SOURCE_DIR=${SOURCE_DIR:-tmp/debuginfo/libc6}
-TARGET_DIR=${TARGET_DIR:-tmp/glibc}
+TEMP_DIR=${TEMP_DIR:-tmp}
+SOURCE_DIR=${SOURCE_DIR:-${TEMP_DIR}/debuginfo/libc6}
+TARGET_DIR=${TARGET_DIR:-${TEMP_DIR}/glibc}
 
 mkdir -p "${TARGET_DIR}"
 for arch in "${SOURCE_DIR}"/*; do

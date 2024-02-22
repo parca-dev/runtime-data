@@ -36,10 +36,10 @@ const (
 	DefaultBaseURL = DefaultUbuntuBaseURL
 
 	// FetchListTimeout is the timeout to fetch the list of packages.
-	FetchListTimeout = 10 * time.Second
+	FetchListTimeout = 30 * time.Second
 
 	// DownloadSinglePackageTimeout is the timeout to download a single package.
-	DownloadSinglePackageTimeout = 30 * time.Second
+	DownloadSinglePackageTimeout = 90 * time.Second
 )
 
 var (

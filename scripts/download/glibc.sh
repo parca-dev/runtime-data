@@ -18,14 +18,15 @@ set -euo pipefail
 
 # This script helps to download glibc using debian packages.
 
-PACKAGE_DIR=${PACKAGE_DIR:-tmp/deb}
-BIN_DIR=${BIN_DIR:-tmp/bin}
-DEBUGINFO_DIR=${DEBUGINFO_DIR:-tmp/debuginfo}
+TEMP_DIR=${TEMP_DIR:-tmp}
+PACKAGE_DIR=${PACKAGE_DIR:-${TEMP_DIR}/deb}
+BIN_DIR=${BIN_DIR:-${TEMP_DIR}/bin}
+DEBUGINFO_DIR=${DEBUGINFO_DIR:-${TEMP_DIR}/debuginfo}
 PACKAGE_NAME=${PACKAGE_NAME:-libc6}
 
 ./debdownload -u 'http://ftp.debian.org/debian/pool/main/g/glibc/' -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}"
-./debdownload -u 'http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/' -t tmp/deb -o tmp/bin -p 'libc6'
-./debdownload -u 'http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc/' -t tmp/deb -o tmp/bin -p 'libc6'
+./debdownload -u 'http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/' -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}"
+./debdownload -u 'http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc/' -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}"
 
 convertArch() {
     case $1 in

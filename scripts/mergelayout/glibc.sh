@@ -16,7 +16,9 @@
 
 set -euo pipefail
 
+TEMP_DIR=${TEMP_DIR:-tmp}
 ARCH=${ARCH:-""}
+
 target_archs=(
     amd64
     arm64
@@ -30,5 +32,5 @@ rm -rf "${TARGET_DIR}" || true
 mkdir -p "${TARGET_DIR}"
 for arch in "${target_archs[@]}"; do
     mkdir -p "${TARGET_DIR}/${arch}"
-    ./mergelayout -o "${TARGET_DIR}/${arch}" tmp/glibc/${arch}/layout/'glibc_*.yaml'
+    ./mergelayout -o "${TARGET_DIR}/${arch}" ${TEMP_DIR}/glibc/${arch}/layout/'glibc_*.yaml'
 done

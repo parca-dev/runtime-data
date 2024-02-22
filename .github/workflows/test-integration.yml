@@ -49,4 +49,4 @@ jobs:
             ${{ runner.arch }}-integration-runtimes
 
       - name: Run integration tests
-        run: make ARCH="amd64" generate test/integration
+        run: make ARCH="amd64" generate/python generate/ruby test/integration

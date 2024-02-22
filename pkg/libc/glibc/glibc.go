@@ -1,17 +1,4 @@
-// Copyright 2023 The Parca Authors
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package ruby
+package glibc
 
 import (
 	"embed"
@@ -22,15 +9,15 @@ import (
 	"sync"
 
 	"github.com/Masterminds/semver/v3"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 )
+
+const layoutDir = "layout"
 
 type Key struct {
 	Index      int
 	Constraint string
 }
-
-const layoutDir = "layout"
 
 var (
 	//go:embed layout/*/*.yaml
@@ -86,7 +73,43 @@ func loadLayouts() (map[Key]*Layout, error) {
 	return structLayouts, err
 }
 
-// GetLayout returns the matching layout for the given version.
+func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
+	entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, arch))
+	if err != nil {
+		return Key{}, nil, err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		var data []byte
+		data, err = generatedLayouts.ReadFile(filepath.Join(layoutDir, arch, entry.Name()))
+		if err != nil {
+			return Key{}, nil, err
+		}
+		ext := filepath.Ext(entry.Name())
+		// Filter out non-yaml files.
+		if ext != ".yaml" && ext != ".yml" {
+			continue
+		}
+		var lyt Layout
+		if err = yaml.Unmarshal(data, &lyt); err != nil {
+			return Key{}, nil, err
+		}
+		rawConstraint := strings.TrimSuffix(entry.Name(), ext)
+		constr, err := semver.NewConstraint(rawConstraint)
+		if err != nil {
+			return Key{}, nil, err
+		}
+		key := Key{Constraint: constr.String()}
+		if constr.Check(v) {
+			return key, &lyt, nil
+		}
+	}
+	return Key{}, nil, errors.New("not found")
+}
+
+// GetLayout returns the layout for the given version.
 func GetLayout(v *semver.Version) (Key, *Layout, error) {
 	for k, l := range structLayouts {
 		constr, err := semver.NewConstraint(k.Constraint)
@@ -100,7 +123,7 @@ func GetLayout(v *semver.Version) (Key, *Layout, error) {
 	return Key{}, nil, errors.New("not found")
 }
 
-// GetLayouts returns all the layouts for the supported versions.
+// GetLayouts returns all the layouts.
 func GetLayouts() (map[Key]*Layout, error) {
 	return structLayouts, nil
 }

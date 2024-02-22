@@ -20,7 +20,9 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	fSet := ff.NewFlagSet("debdownload")
 	var (
@@ -49,6 +51,8 @@ func main() {
 
 	cli := &cli{logger: logger}
 
+	logger.Info("running", "target", target, "debuginfoDir", *debuginfoDir)
+
 	if err := cli.run(*debuginfoDir, target); err != nil {
 		logger.Error("failed to run", "err", err)
 		os.Exit(1)
@@ -69,6 +73,8 @@ func (c *cli) run(debuginfoDir string, targetPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get build ID: %w", err)
 	}
+
+	c.logger.Debug("looking for the debuginfo", "buildID", buildID)
 
 	dbgFile, err := c.find(debuginfoDir, buildID, f)
 	if err != nil {

@@ -14,6 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/parca-dev/runtime-data/pkg/datamap"
+	"github.com/parca-dev/runtime-data/pkg/libc/glibc"
 	"github.com/parca-dev/runtime-data/pkg/python"
 	"github.com/parca-dev/runtime-data/pkg/ruby"
 	"github.com/parca-dev/runtime-data/pkg/runtimedata"
@@ -72,12 +73,12 @@ func main() {
 		if outputDir == "" {
 			outputDir = "pkg/ruby"
 		}
-	case "libc":
+	case "glibc":
 		// TODO(kakkoyun): Change depending on the libc implementation. e.g musl, glibc, etc.
-		// layoutMap = libc.DataMapForLayout(version)
-		// if outputDir == "" {
-		// 	outputDir = "pkg/libc/layout"
-		// }
+		layoutMap = glibc.DataMapForLayout(version)
+		if outputDir == "" {
+			outputDir = "pkg/libc/glibc/layout"
+		}
 	default:
 		logger.Error("invalid offset map module", "mod", runtime)
 		os.Exit(1)

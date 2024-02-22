@@ -15,3 +15,18 @@
 #
 
 set -euo pipefail
+
+SOURCE_DIR=${SOURCE_DIR:-tmp/debuginfo/libc6}
+TARGET_DIR=${TARGET_DIR:-tmp/glibc}
+
+mkdir -p "${TARGET_DIR}"
+for arch in "${SOURCE_DIR}"/*; do
+    for version in "${arch}"/*; do
+        for dbgfile in "${version}"/*; do
+            v=$(basename "${version}")
+            a=$(basename "${arch}")
+            echo "Running structlayout against glibc ${v} for ${a}..."
+            ./structlayout -r glibc -v "${v}" -o "${TARGET_DIR}/${a}" "${dbgfile}"
+        done
+    done
+done

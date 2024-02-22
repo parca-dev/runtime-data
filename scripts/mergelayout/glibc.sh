@@ -15,3 +15,20 @@
 #
 
 set -euo pipefail
+
+ARCH=${ARCH:-""}
+target_archs=(
+    amd64
+    arm64
+)
+if [ -n "${ARCH}" ]; then
+    target_archs=("${ARCH}")
+fi
+
+TARGET_DIR=${TARGET_DIR:-pkg/libc/glibc/layout}
+rm -rf "${TARGET_DIR}" || true
+mkdir -p "${TARGET_DIR}"
+for arch in "${target_archs[@]}"; do
+    mkdir -p "${TARGET_DIR}/${arch}"
+    ./mergelayout -o "${TARGET_DIR}/${arch}" tmp/glibc/${arch}/layout/'glibc_*.yaml'
+done

@@ -22,6 +22,7 @@ import (
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
 	"github.com/ulikunitz/xz"
+	"golang.org/x/exp/maps"
 	"golang.org/x/net/html"
 )
 
@@ -35,8 +36,18 @@ const (
 	DefaultBaseURL = DefaultDebianBaseURL
 )
 
+var (
+	allowedVariants = map[string]struct{}{
+		"":    {}, // main package.
+		"dbg": {},
+		// "dev": {},
+	}
+)
+
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 
 	fSet := ff.NewFlagSet("debdownload")
 	var (
@@ -163,7 +174,11 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 	)
 	c.logger.Info("matcher", "pattern", matcher.String())
 
-	var packages []*pkg
+	packages := map[string]*pkg{}
+	key := func(p *pkg) string {
+		return strings.Join([]string{p.name, p.variant, shortVersion(p.version), p.arch}, "-")
+	}
+
 	var process func(*html.Node)
 	process = func(n *html.Node) {
 		if n.Type == html.ElementNode && n.Data == "a" {
@@ -179,13 +194,26 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 								continue
 							}
 						}
-						packages = append(packages, &pkg{
+						variant := strings.TrimPrefix(matches[2], "-")
+						if _, ok := allowedVariants[variant]; !ok {
+							continue
+						}
+						p := &pkg{
 							link:    must(url.JoinPath(pkgUrl, a.Val)),
 							name:    matches[1],
-							variant: strings.TrimPrefix(matches[2], "-"),
+							variant: variant,
 							version: version,
 							arch:    matches[4],
-						})
+						}
+						if oldPkg, ok := packages[key(p)]; ok {
+							if p.version.GreaterThan(oldPkg.version) {
+								c.logger.Info("found newer version", "old", oldPkg.version, "new", p.version)
+								packages[key(p)] = p
+							}
+							continue
+						}
+
+						packages[key(p)] = p
 					}
 				}
 			}
@@ -195,22 +223,25 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 		}
 	}
 	process(doc)
-	return packages, nil
+	return maps.Values(packages), nil
+}
+
+func shortVersion(v *semver.Version) string {
+	return fmt.Sprintf("%d.%d", v.Major(), v.Minor())
 }
 
 func (c *cli) download(ctx context.Context, packages []*pkg, tempDir string) error {
 	c.logger.Info("downloading packages", "tempDir", tempDir)
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
 	for _, p := range packages {
-		shortVersion := fmt.Sprintf("%d.%d.%d", p.version.Major(), p.version.Minor(), p.version.Patch())
-		var target string
+		var (
+			target  string
+			version = p.version.String()
+		)
 		if p.variant != "" {
-			target = filepath.Join(tempDir, fmt.Sprintf("%s-%s_%s_%s.deb", p.name, p.variant, shortVersion, p.arch))
+			target = filepath.Join(tempDir, fmt.Sprintf("%s-%s_%s_%s.deb", p.name, p.variant, version, p.arch))
 		} else {
-			target = filepath.Join(tempDir, fmt.Sprintf("%s_%s_%s.deb", p.name, shortVersion, p.arch))
+			target = filepath.Join(tempDir, fmt.Sprintf("%s_%s_%s.deb", p.name, version, p.arch))
 		}
 		if _, err := os.Stat(target); err == nil {
 			c.logger.Info("file already exists", "file", target)
@@ -219,6 +250,9 @@ func (c *cli) download(ctx context.Context, packages []*pkg, tempDir string) err
 		}
 
 		c.logger.Info("downloading package", "link", p.link, "target", target)
+
+		ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
 
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.link, nil)
 		if err != nil {

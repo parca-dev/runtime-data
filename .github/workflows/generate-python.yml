@@ -14,7 +14,11 @@ concurrency:
 
 jobs:
   generate:
-    runs-on: ubuntu-latest
+    runs-on:
+      - nscloud-ubuntu-22.04-amd64-8x16-with-cache
+      - nscloud-cache-tag-python-generators
+      - nscloud-cache-size-50gb
+      - nscloud-exp-container-image-cache
     timeout-minutes: 20
     strategy:
       fail-fast: false
@@ -99,7 +103,7 @@ jobs:
           retention-days: 1
 
   merge-and-create-branch:
-    runs-on: ubuntu-latest
+    runs-on: nscloud-ubuntu-20.04-amd64-4x16
     needs: generate
     permissions:
       contents: write

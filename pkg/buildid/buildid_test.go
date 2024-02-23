@@ -18,7 +18,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestFromFile(t *testing.T) {
@@ -56,14 +56,18 @@ func TestFromFile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			f, err := os.Open(tt.args.path)
-			require.NoError(t, err)
-			got, err := FromFile(f)
-			if tt.wantErr {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
+			if err != nil {
+				t.Fatal(err)
 			}
-			require.Equal(t, tt.want, got)
+			got, err := FromFile(f)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FromFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("FromFile() mismatch (-want +got):\n%s", diff)
+			}
 		})
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/Masterminds/semver/v3"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 const layoutDir = "layout"

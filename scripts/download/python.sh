@@ -26,7 +26,6 @@ ARCH=${ARCH:-""}
 python_versions=(
     # Unsupported Versions (end of life)
     2.7.15
-    2.7.18
     3.3.7
     3.4.8
     3.5.5
@@ -41,6 +40,8 @@ python_versions=(
     3.9.6  # security
     3.10.0 # security
     3.11.0 # bugfix
+    3.12.0
+    3.13.0a4
 )
 
 target_archs=(

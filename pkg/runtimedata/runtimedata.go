@@ -10,6 +10,10 @@ type LayoutMap interface {
 	Layout() RuntimeData
 }
 
+type InitialStateMap interface {
+	InitialState() RuntimeData
+}
+
 type RuntimeData interface {
 	Data() ([]byte, error)
 }

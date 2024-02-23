@@ -21,10 +21,10 @@ func Test_getLayoutForArch(t *testing.T) {
 			v:    semver.MustParse("2.29.0"),
 			arch: "amd64",
 			want: &Layout{
-				PthreadSpecific1stblock: 784,
-				PthreadSize:             2304,
-				PthreadKeyData:          8,
-				PthreadKeyDataSize:      16,
+				PThreadSpecific1stblock: 784,
+				PThreadSize:             2304,
+				PThreadKeyData:          0x08,
+				PThreadKeyDataSize:      0x10,
 			},
 		},
 		{
@@ -32,10 +32,10 @@ func Test_getLayoutForArch(t *testing.T) {
 			v:    semver.MustParse("2.29.0"),
 			arch: "arm64",
 			want: &Layout{
-				PthreadSpecific1stblock: 272,
-				PthreadSize:             1792,
-				PthreadKeyData:          8,
-				PthreadKeyDataSize:      16,
+				PThreadSpecific1stblock: 272,
+				PThreadSize:             1792,
+				PThreadKeyData:          0x08,
+				PThreadKeyDataSize:      0x10,
 			},
 		},
 		{
@@ -43,10 +43,10 @@ func Test_getLayoutForArch(t *testing.T) {
 			v:    semver.MustParse("2.37.0"),
 			arch: "amd64",
 			want: &Layout{
-				PthreadSpecific1stblock: 784,
-				PthreadSize:             2368,
-				PthreadKeyData:          8,
-				PthreadKeyDataSize:      16,
+				PThreadSpecific1stblock: 784,
+				PThreadSize:             2368,
+				PThreadKeyData:          0x08,
+				PThreadKeyDataSize:      0x10,
 			},
 		},
 		{
@@ -54,10 +54,10 @@ func Test_getLayoutForArch(t *testing.T) {
 			v:    semver.MustParse("2.37.0"),
 			arch: "arm64",
 			want: &Layout{
-				PthreadSpecific1stblock: 272,
-				PthreadSize:             1856,
-				PthreadKeyData:          8,
-				PthreadKeyDataSize:      16,
+				PThreadSpecific1stblock: 272,
+				PThreadSize:             1856,
+				PThreadKeyData:          0x08,
+				PThreadKeyDataSize:      0x10,
 			},
 		},
 	}

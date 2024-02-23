@@ -18,21 +18,22 @@ set -euo pipefail
 
 # This script helps to merge structlayout outputs in specified directory for integration tests.
 
-ARCH=${ARCH:-""}
-target_archs=(
-    amd64
-    arm64
-)
-if [ -n "${ARCH}" ]; then
-    target_archs=("${ARCH}")
-fi
+TEMP_DIR=${TEMP_DIR:-tmp}
+OUTPUT_DIR=${OUTPUT_DIR:-pkg/python}
+INPUT_DIR=${INPUT_DIR:-${TEMP_DIR}/python}
 
-rm -rf pkg/python/layout
-rm -rf pkg/python/initialstate
-for arch in "${target_archs[@]}"; do
-    mkdir -p pkg/python/layout/"${arch}"
-    ./mergelayout -o pkg/python/layout/"${arch}" tmp/python/"${arch}"/layout/'python_*.yaml'
+rm -rf "${OUTPUT_DIR}"/layout
+rm -rf "${OUTPUT_DIR}"/initialstate
+for arch in "${INPUT_DIR}"/*; do
+    if [ ! -d "${arch}" ]; then
+        continue
+    fi
 
-    mkdir -p pkg/python/initialstate"/${arch}"
-    ./mergelayout -o pkg/python/initialstate/"${arch}" tmp/python/"${arch}"/initialstate/'python_*.yaml'
+    arch=$(basename "${arch}")
+
+    mkdir -p "${OUTPUT_DIR}"/layout/"${arch}"
+    ./mergelayout -o "${OUTPUT_DIR}"/layout/"${arch}" "${INPUT_DIR}"/"${arch}"/layout/'python_*.yaml'
+
+    mkdir -p "${OUTPUT_DIR}"/initialstate"/${arch}"
+    ./mergelayout -o "${OUTPUT_DIR}"/initialstate/"${arch}" "${INPUT_DIR}"/"${arch}"/initialstate/'python_*.yaml'
 done

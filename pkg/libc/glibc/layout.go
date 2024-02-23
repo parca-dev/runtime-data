@@ -9,10 +9,10 @@ import (
 )
 
 type Layout struct {
-	PthreadSpecific1stblock int64 `yaml:"pthread_specific_1stblock"`
-	PthreadSize             int64 `yaml:"pthread_size"`
-	PthreadKeyData          int64 `yaml:"pthread_key_data"`
-	PthreadKeyDataSize      int64 `yaml:"pthread_key_data_size"`
+	PThreadSpecific1stblock int64 `yaml:"pthread_specific_1stblock"`
+	PThreadSize             int64 `yaml:"pthread_size"`
+	PThreadKeyData          int64 `yaml:"pthread_key_data"`
+	PThreadKeyDataSize      int64 `yaml:"pthread_key_data_size"`
 }
 
 func (l Layout) Data() ([]byte, error) {

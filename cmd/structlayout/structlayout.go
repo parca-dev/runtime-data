@@ -58,11 +58,15 @@ func main() {
 
 	var (
 		layoutMap       runtimedata.LayoutMap
-		initialStateMap any
+		initialStateMap runtimedata.InitialStateMap
 		outputDir       = givenOutputDir
 	)
 	switch runtime {
 	case "python":
+		if strings.Contains(version, "a") {
+			// Alpha version detected.
+			version = strings.ReplaceAll(version, "a", "-alpha.")
+		}
 		layoutMap = python.DataMapForLayout(version)
 		initialStateMap = python.DataMapForInitialState(version)
 		if outputDir == "" {
@@ -89,11 +93,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if layoutMap == nil {
-		logger.Error("unknown version", "version", version)
-		os.Exit(1)
-	}
-
 	var (
 		input = fSet.Arg(0)
 	)
@@ -103,19 +102,23 @@ func main() {
 		os.Exit(1)
 	}
 
-	output := filepath.Join(outputDir, "layout", fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
-	if err := processAndWriteLayout(dwarfData, output, version, layoutMap); err != nil {
-		logger.Error("failed to write layout", "err", err)
-		os.Exit(1)
+	if !isNil(layoutMap) {
+		output := filepath.Join(outputDir, "layout", fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
+		if err := processAndWriteLayout(dwarfData, output, version, layoutMap); err != nil {
+			logger.Error("failed to write layout", "err", err)
+			os.Exit(1)
+		}
+		logger.Info("layout file written", "file", output)
+	} else {
+		logger.Info("no layout map found, skipping layout generation")
 	}
-	logger.Info("layout file written", "file", output)
 
 	if isNil(initialStateMap) {
 		logger.Info("no initial state map found, skipping initial state generation")
 		os.Exit(0)
 	}
 
-	output = filepath.Join(outputDir, "initialstate", fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
+	output := filepath.Join(outputDir, "initialstate", fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
 	if err := processAndWriteInitialState(dwarfData, output, version, initialStateMap); err != nil {
 		logger.Error("failed to write initial state", "err", err)
 		os.Exit(1)
@@ -161,7 +164,7 @@ func processAndWriteLayout(dwarfData *dwarf.Data, output string, version string,
 }
 
 // processAndWriteInitialState processes the given ELF file and writes the initial state to the given output file.
-func processAndWriteInitialState(dwarfData *dwarf.Data, output string, version string, initialStateMap any) error {
+func processAndWriteInitialState(dwarfData *dwarf.Data, output string, version string, initialStateMap runtimedata.InitialStateMap) error {
 	dm, err := datamap.New(initialStateMap)
 	if err != nil {
 		return fmt.Errorf("failed to create data map: %w", err)
@@ -181,7 +184,7 @@ func processAndWriteInitialState(dwarfData *dwarf.Data, output string, version s
 	}
 
 	// Extremely in-efficient and hacky but it should work for now.
-	withVersion, err := runtimedata.WithVersion(version, convertToMapOfAny(initialStateMap))
+	withVersion, err := runtimedata.WithVersion(version, convertToMapOfAny(initialStateMap.InitialState()))
 	if err != nil {
 		return fmt.Errorf("failed to wrap layout with version: %w", err)
 	}

@@ -18,40 +18,22 @@ set -euo pipefail
 
 # This script helps to run structlayout for specified python versions for integration tests.
 
-# https://devguide.python.org/versions/
-python_versions=(
-    # Unsupported Versions (end of life)
-    2.7.15
-    2.7.18
-    3.3.7
-    3.4.8
-    3.5.5
-    3.6.6
-    3.7.0
-    3.7.2
-    3.7.4
-    # Supported Versions
-    3.8.0  # security
-    3.8.1  # security
-    3.9.5  # security
-    3.9.6  # security
-    3.10.0 # security
-    3.11.0 # bugfix
-)
+TMP_DIR=${TMP_DIR:-tmp}
+OUTPUT_DIR=${OUTPUT_DIR:-${TMP_DIR}/python}
+INPUT_DIR=${INPUT_DIR:-tests/integration/binaries/python}
 
-ARCH=${ARCH:-""}
-target_archs=(
-    amd64
-    arm64
-)
-if [ -n "${ARCH}" ]; then
-    target_archs=("${ARCH}")
-fi
-
-mkdir -p tmp/python/
-for python_version in "${python_versions[@]}"; do
-    for arch in "${target_archs[@]}"; do
-        echo "Running structlayout against python ${python_version} runtime for ${arch}..."
-        ./structlayout -r python -v "${python_version}" -o tmp/python/${arch} tests/integration/binaries/python/${arch}/"${python_version}"/libpython"${python_version%.*}"*.so.1.0
+mkdir -p ${OUTPUT_DIR}
+for arch in "${INPUT_DIR}"/*; do
+    if [ ! -d "${arch}" ]; then
+        continue
+    fi
+    for version in "${arch}"/*; do
+        if [ ! -d "${version}" ]; then
+            continue
+        fi
+        arch=$(basename "${arch}")
+        version=$(basename "${version}")
+        echo "Running structlayout against python ${version} runtime for ${arch}..."
+        ./structlayout -r python -v "${version}" -o ${OUTPUT_DIR}/${arch} ${INPUT_DIR}/${arch}/"${version}"/libpython"${version%.*}"*.so.1.0
     done
 done

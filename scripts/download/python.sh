@@ -41,6 +41,8 @@ python_versions=(
     3.9.6  # security
     3.10.0 # security
     3.11.0 # bugfix
+    3.12.2
+    3.13.0a4
 )
 
 target_archs=(

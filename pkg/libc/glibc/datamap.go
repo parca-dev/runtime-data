@@ -11,10 +11,10 @@ type glibc struct {
 
 func (g *glibc) Layout() runtimedata.RuntimeData {
 	return &Layout{
-		PthreadSpecific1stblock: g.PThreadSpecific1stblock,
-		PthreadSize:             g.PThreadSize,
-		PthreadKeyData:          g.PThreadKeyData,
-		PthreadKeyDataSize:      g.PThreadKeyDataSize,
+		PThreadSpecific1stblock: g.PThreadSpecific1stblock,
+		PThreadSize:             g.PThreadSize,
+		PThreadKeyData:          g.PThreadKeyData,
+		PThreadKeyDataSize:      g.PThreadKeyDataSize,
 	}
 }
 

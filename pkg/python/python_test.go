@@ -241,6 +241,13 @@ func TestGetInitialState(t *testing.T) {
 				ThreadStateCurrent: 576,
 			},
 		},
+		{
+			version: "3.12.0",
+			want: &InitialState{
+				InterpreterHead:    40,
+				ThreadStateCurrent: 576,
+			},
+		},
 		// arm64
 		{
 			version: "2.7.15",
@@ -302,6 +309,14 @@ func TestGetInitialState(t *testing.T) {
 		},
 		{
 			version: "3.11.0",
+			arch:    "arm64",
+			want: &InitialState{
+				InterpreterHead:    40,
+				ThreadStateCurrent: 592,
+			},
+		},
+		{
+			version: "3.12.0",
 			arch:    "arm64",
 			want: &InitialState{
 				InterpreterHead:    40,

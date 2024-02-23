@@ -17,6 +17,7 @@ func DataMapForLayout(v string) runtimedata.LayoutMap {
 		version.MustParseConstraints("3.3.x - 3.9.x"): &python33_39{},
 		version.MustParseConstraints("3.10.x"):        &python310{},
 		version.MustParseConstraints("3.11.x"):        &python311{},
+		version.MustParseConstraints("3.12.x"):        &python312{},
 	}
 
 	lookupVersion := semver.MustParse(v)
@@ -278,6 +279,76 @@ func (p python311) Layout() runtimedata.RuntimeData {
 		},
 		PyCFrame: PyCFrame{
 			CurrentFrame: p.PyCFrameCurrentFrame,
+		},
+		PyInterpreterState: PyInterpreterState{
+			TStateHead: p.PyInterpreterStateTstateHead + p.PyInterpreterStateIsPythreadsHead,
+		},
+		PyRuntimeState: PyRuntimeState{
+			InterpMain: p.PyRuntimeStateInterpreters + p.PyRuntimeStatePyInterpretersMain,
+		},
+		PyFrameObject: PyFrameObject{
+			FBack:       p.PyFrameObjectFBack,
+			FCode:       p.PyFrameObjectFCode,
+			FLineno:     doesNotExist,
+			FLocalsplus: p.PyFrameObjectFLocalsplus,
+		},
+		PyCodeObject: PyCodeObject{
+			CoFilename:    p.PyCodeObjectCoFilename,
+			CoName:        p.PyCodeObjectCoName,
+			CoVarnames:    p.PyCodeObjectCoVarNames,
+			CoFirstlineno: p.PyCodeObjectCoFirstlineno,
+		},
+		PyTupleObject: PyTupleObject{
+			ObItem: p.PyTupleObjectObItem,
+		},
+	}
+}
+
+type python312 struct {
+	PyObjectObType                    int64 `offsetof:"PyObject.ob_type"`
+	PyStringData                      int64 `sizeof:"PyASCIIObject"`
+	PyTypeObjectTpName                int64 `offsetof:"PyTypeObject.tp_name"`
+	PyThreadStateInterp               int64 `offsetof:"PyThreadState.interp"`
+	PyThreadStateNext                 int64 `offsetof:"PyThreadState.next"`
+	PyThreadStateThreadID             int64 `offsetof:"PyThreadState.thread_id"`
+	PyThreadStateNativeThreadID       int64 `offsetof:"PyThreadState.native_thread_id"`
+	PyThreadStateCFrame               int64 `offsetof:"PyThreadState.cframe"`
+	PyInterpreterStateTstateHead      int64 `offsetof:"PyInterpreterState.threads"`
+	PyInterpreterStateIsPythreadsHead int64 `offsetof:"pythreads.head"`
+	PyRuntimeStateInterpreters        int64 `offsetof:"pyruntimestate.interpreters"`
+	PyRuntimeStatePyInterpretersMain  int64 `offsetof:"pyinterpreters.main"`
+	PyFrameObjectFBack                int64 `offsetof:"_PyInterpreterFrame.previous"`
+	PyFrameObjectFCode                int64 `offsetof:"_PyInterpreterFrame.f_code"`
+	PyFrameObjectFLocalsplus          int64 `offsetof:"_PyInterpreterFrame.localsplus"`
+	PyCodeObjectCoFilename            int64 `offsetof:"PyCodeObject.co_filename"`
+	PyCodeObjectCoName                int64 `offsetof:"PyCodeObject.co_name"`
+	PyCodeObjectCoVarNames            int64 `offsetof:"PyCodeObject.co_localsplusnames"`
+	PyCodeObjectCoFirstlineno         int64 `offsetof:"PyCodeObject.co_firstlineno"`
+	PyTupleObjectObItem               int64 `offsetof:"PyTupleObject.ob_item"`
+}
+
+func (p python312) Layout() runtimedata.RuntimeData {
+	return &Layout{
+		PyObject: PyObject{
+			ObType: p.PyObjectObType,
+		},
+		PyString: PyString{
+			Data: p.PyStringData,
+			Size: doesNotExist,
+		},
+		PyTypeObject: PyTypeObject{
+			TPName: p.PyTypeObjectTpName,
+		},
+		PyThreadState: PyThreadState{
+			Interp:         p.PyThreadStateInterp,
+			Next:           p.PyThreadStateNext,
+			Frame:          doesNotExist,
+			ThreadID:       p.PyThreadStateThreadID,
+			NativeThreadID: p.PyThreadStateNativeThreadID,
+			CFrame:         p.PyThreadStateCFrame,
+		},
+		PyCFrame: PyCFrame{
+			CurrentFrame: doesNotExist,
 		},
 		PyInterpreterState: PyInterpreterState{
 			TStateHead: p.PyInterpreterStateTstateHead + p.PyInterpreterStateIsPythreadsHead,

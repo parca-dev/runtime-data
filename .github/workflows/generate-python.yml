@@ -72,7 +72,6 @@ jobs:
           key: python-downloaded-${{ runner.os }}-${{ matrix.arch }}
           restore-keys: |
             python-downloaded-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.python-version }}
-            python-downloaded-${{ runner.os }}-${{ matrix.arch }}
 
       - name: Generate Python Offsets for ${{ matrix.python-version }} on ${{ matrix.arch }}
         run: |

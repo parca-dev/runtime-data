@@ -22,9 +22,15 @@ TMP_DIR=${TMP_DIR:-tmp}
 OUTPUT_DIR=${OUTPUT_DIR:-${TMP_DIR}/python}
 INPUT_DIR=${INPUT_DIR:-tests/integration/binaries/python}
 
-mkdir -p tmp/python/
+mkdir -p ${OUTPUT_DIR}
 for arch in "${INPUT_DIR}"/*; do
+    if [ ! -d "${arch}" ]; then
+        continue
+    fi
     for version in "${arch}"/*; do
+        if [ ! -d "${version}" ]; then
+            continue
+        fi
         arch=$(basename "${arch}")
         version=$(basename "${version}")
         echo "Running structlayout against python ${version} runtime for ${arch}..."

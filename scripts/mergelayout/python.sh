@@ -25,7 +25,12 @@ INPUT_DIR=${INPUT_DIR:-${TEMP_DIR}/python}
 rm -rf "${OUTPUT_DIR}"/layout
 rm -rf "${OUTPUT_DIR}"/initialstate
 for arch in "${INPUT_DIR}"/*; do
+    if [ ! -d "${arch}" ]; then
+        continue
+    fi
+
     arch=$(basename "${arch}")
+
     mkdir -p "${OUTPUT_DIR}"/layout/"${arch}"
     ./mergelayout -o "${OUTPUT_DIR}"/layout/"${arch}" "${INPUT_DIR}"/"${arch}"/layout/'python_*.yaml'
 

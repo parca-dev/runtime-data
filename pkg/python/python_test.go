@@ -204,6 +204,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    24,
 				ThreadStateCurrent: 1392,
+				AutoTSSKey:         1416,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -211,6 +216,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    24,
 				ThreadStateCurrent: 1480,
+				AutoTSSKey:         1504,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -218,6 +228,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    32,
 				ThreadStateCurrent: 1368,
+				AutoTSSKey:         1392,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -225,6 +240,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    32,
 				ThreadStateCurrent: 568,
+				AutoTSSKey:         584,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -232,6 +252,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    32,
 				ThreadStateCurrent: 568,
+				AutoTSSKey:         584,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -239,13 +264,23 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    40,
 				ThreadStateCurrent: 576,
+				AutoTSSKey:         592,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
 			version: "3.12.0",
 			want: &InitialState{
 				InterpreterHead:    40,
-				ThreadStateCurrent: 576,
+				ThreadStateCurrent: -1,
+				AutoTSSKey:         1544,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		// arm64
@@ -273,6 +308,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    24,
 				ThreadStateCurrent: 1408,
+				AutoTSSKey:         1432,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -281,6 +321,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    24,
 				ThreadStateCurrent: 1496,
+				AutoTSSKey:         1520,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -289,6 +334,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    32,
 				ThreadStateCurrent: 1384,
+				AutoTSSKey:         1408,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -297,6 +347,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    32,
 				ThreadStateCurrent: 584,
+				AutoTSSKey:         600,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -305,6 +360,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    32,
 				ThreadStateCurrent: 584,
+				AutoTSSKey:         600,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -313,6 +373,11 @@ func TestGetInitialState(t *testing.T) {
 			want: &InitialState{
 				InterpreterHead:    40,
 				ThreadStateCurrent: 592,
+				AutoTSSKey:         608,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 		{
@@ -320,7 +385,12 @@ func TestGetInitialState(t *testing.T) {
 			arch:    "arm64",
 			want: &InitialState{
 				InterpreterHead:    40,
-				ThreadStateCurrent: 592,
+				ThreadStateCurrent: -1,
+				AutoTSSKey:         1544,
+				PyTSS: PyTSSKey{
+					Key:  4,
+					Size: 8,
+				},
 			},
 		},
 	}

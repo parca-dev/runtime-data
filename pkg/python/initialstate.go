@@ -59,7 +59,7 @@ type InitialState struct {
 	InterpreterHead    int64    `yaml:"interpreter_head"`
 	ThreadStateCurrent int64    `yaml:"tstate_current"`
 	AutoTSSKey         int64    `yaml:"auto_tss_key"`
-	PyTSSKey           PyTSSKey `yaml:"tss"`
+	PyTSS              PyTSSKey `yaml:"tss"`
 }
 
 type PyTSSKey struct {
@@ -91,7 +91,7 @@ func (i initialState312) InitialState() runtimedata.RuntimeData {
 		AutoTSSKey:      i.AutoTSSKey,
 		// https://github.com/python/cpython/issues/103323
 		ThreadStateCurrent: doesNotExist,
-		PyTSSKey: PyTSSKey{
+		PyTSS: PyTSSKey{
 			Key:  i.PyTSSKey,
 			Size: i.PyTSSSize,
 		},
@@ -114,7 +114,7 @@ func (i initialState38) InitialState() runtimedata.RuntimeData {
 		InterpreterHead:    i.InterpreterHead,
 		ThreadStateCurrent: i.ThreadStateCurrent,
 		AutoTSSKey:         i.AutoTSSKey,
-		PyTSSKey: PyTSSKey{
+		PyTSS: PyTSSKey{
 			Key:  i.PyTSSKey,
 			Size: i.PyTSSSize,
 		},

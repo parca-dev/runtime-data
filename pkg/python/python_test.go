@@ -150,6 +150,54 @@ func TestGetLayout(t *testing.T) {
 				},
 			},
 		},
+		{
+			version: "3.12.2",
+			archs:   allSupportedArchs,
+			want: &Layout{
+				PyObject: PyObject{
+					ObType: 8,
+				},
+				PyString: PyString{
+					Data: 40,
+					Size: -1,
+				},
+				PyTypeObject: PyTypeObject{
+					TPName: 24,
+				},
+				PyThreadState: PyThreadState{
+					Next:           8,
+					Interp:         16,
+					Frame:          -1,
+					ThreadID:       136,
+					NativeThreadID: 144,
+					CFrame:         56,
+				},
+				PyCFrame: PyCFrame{
+					CurrentFrame: 0,
+				},
+				PyInterpreterState: PyInterpreterState{
+					TStateHead: 72,
+				},
+				PyRuntimeState: PyRuntimeState{
+					InterpMain: 48,
+				},
+				PyFrameObject: PyFrameObject{
+					FBack:       8,
+					FCode:       0,
+					FLineno:     -1,
+					FLocalsplus: 72,
+				},
+				PyCodeObject: PyCodeObject{
+					CoFilename:    112,
+					CoName:        120,
+					CoVarnames:    0,
+					CoFirstlineno: 68,
+				},
+				PyTupleObject: PyTupleObject{
+					ObItem: 24,
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		var (

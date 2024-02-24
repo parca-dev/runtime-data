@@ -71,7 +71,7 @@ func (p python27) Layout() runtimedata.RuntimeData {
 			CFrame:         doesNotExist,
 		},
 		PyCFrame: PyCFrame{
-			CurrentFrame: 0, // TODO(kakkoyun): Set -1 (next iteration).
+			CurrentFrame: 0,
 		},
 		PyInterpreterState: PyInterpreterState{
 			TStateHead: p.PyInterpreterStateTstateHead,
@@ -139,7 +139,7 @@ func (p python33_39) Layout() runtimedata.RuntimeData {
 			CFrame:         doesNotExist,
 		},
 		PyCFrame: PyCFrame{
-			CurrentFrame: 0, // TODO(kakkoyun): Set -1 (next iteration).
+			CurrentFrame: 0,
 		},
 		PyInterpreterState: PyInterpreterState{
 			TStateHead: p.PyInterpreterStateTstateHead,
@@ -207,7 +207,7 @@ func (p python310) Layout() runtimedata.RuntimeData {
 			CFrame:         doesNotExist,
 		},
 		PyCFrame: PyCFrame{
-			CurrentFrame: 0, // TODO(kakkoyun): Set -1 (next iteration).
+			CurrentFrame: 0,
 		},
 		PyInterpreterState: PyInterpreterState{
 			TStateHead: p.PyInterpreterStateTstateHead,
@@ -322,7 +322,7 @@ type python312 struct {
 	PyFrameObjectFLocalsplus          int64 `offsetof:"_PyInterpreterFrame.localsplus"`
 	PyCodeObjectCoFilename            int64 `offsetof:"PyCodeObject.co_filename"`
 	PyCodeObjectCoName                int64 `offsetof:"PyCodeObject.co_name"`
-	PyCodeObjectCoVarNames            int64 `offsetof:"PyCodeObject.co_localsplusnames"`
+	PyCodeObjectCoVarNames            int64 `offsetof:"PyCodeObject.co_varnames"`
 	PyCodeObjectCoFirstlineno         int64 `offsetof:"PyCodeObject.co_firstlineno"`
 	PyTupleObjectObItem               int64 `offsetof:"PyTupleObject.ob_item"`
 }
@@ -348,7 +348,7 @@ func (p python312) Layout() runtimedata.RuntimeData {
 			CFrame:         p.PyThreadStateCFrame,
 		},
 		PyCFrame: PyCFrame{
-			CurrentFrame: doesNotExist,
+			CurrentFrame: 0,
 		},
 		PyInterpreterState: PyInterpreterState{
 			TStateHead: p.PyInterpreterStateTstateHead + p.PyInterpreterStateIsPythreadsHead,

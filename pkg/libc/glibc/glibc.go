@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/parca-dev/runtime-data/pkg/libc"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,7 +23,7 @@ type Key struct {
 var (
 	//go:embed layout/*/*.yaml
 	generatedLayouts embed.FS
-	structLayouts    = map[Key]*Layout{}
+	structLayouts    = map[Key]*libc.Layout{}
 	once             = &sync.Once{}
 )
 
@@ -34,7 +35,7 @@ func init() {
 	}
 }
 
-func loadLayouts() (map[Key]*Layout, error) {
+func loadLayouts() (map[Key]*libc.Layout, error) {
 	var err error
 	once.Do(func() {
 		entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, runtime.GOARCH))
@@ -56,7 +57,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 			if ext != ".yaml" && ext != ".yml" {
 				continue
 			}
-			var lyt Layout
+			var lyt libc.Layout
 			if err = yaml.Unmarshal(data, &lyt); err != nil {
 				return
 			}
@@ -73,7 +74,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 	return structLayouts, err
 }
 
-func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
+func getLayoutForArch(v *semver.Version, arch string) (Key, *libc.Layout, error) {
 	entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, arch))
 	if err != nil {
 		return Key{}, nil, err
@@ -92,7 +93,7 @@ func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
 		if ext != ".yaml" && ext != ".yml" {
 			continue
 		}
-		var lyt Layout
+		var lyt libc.Layout
 		if err = yaml.Unmarshal(data, &lyt); err != nil {
 			return Key{}, nil, err
 		}
@@ -110,7 +111,7 @@ func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
 }
 
 // GetLayout returns the layout for the given version.
-func GetLayout(v *semver.Version) (Key, *Layout, error) {
+func GetLayout(v *semver.Version) (Key, *libc.Layout, error) {
 	for k, l := range structLayouts {
 		constr, err := semver.NewConstraint(k.Constraint)
 		if err != nil {
@@ -124,6 +125,6 @@ func GetLayout(v *semver.Version) (Key, *Layout, error) {
 }
 
 // GetLayouts returns all the layouts.
-func GetLayouts() (map[Key]*Layout, error) {
+func GetLayouts() (map[Key]*libc.Layout, error) {
 	return structLayouts, nil
 }

@@ -74,7 +74,7 @@ func (r ruby30) Layout() runtimedata.RuntimeData {
 		LineInfoSizeOffset:  r.LineInfoTableOffset + r.LineInfoIseqInfoSizeOffset,
 		// TODO(kakkoyun): This is a temporary fix, we need to find a better way to get the main thread.
 		// - https://github.com/javierhonduco/rbperf/issues/78
-		MainThreadOffset:    r.MainThreadOffset - 8, 		// ruby_current_vm_ptr->ractor->main_thread
-		EcOffset: r.EcOffset, // ruby_current_vm_ptr->ractor->main_thread->ractor(->threads)->running_ec
+		MainThreadOffset: r.MainThreadOffset - 8, // ruby_current_vm_ptr->ractor->main_thread
+		EcOffset:         r.EcOffset,             // ruby_current_vm_ptr->ractor->main_thread->ractor(->threads)->running_ec
 	}
 }

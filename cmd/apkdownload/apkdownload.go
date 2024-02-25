@@ -94,7 +94,7 @@ func main() {
 	}
 
 	interimDir := filepath.Join(*tempDir, *pkgName)
-	if err := os.MkdirAll(interimDir, 0755); err != nil {
+	if err := os.MkdirAll(interimDir, 0o755); err != nil {
 		logger.Error("failed to create temp directory", "err", err)
 		os.Exit(1)
 	}
@@ -109,7 +109,7 @@ func main() {
 	}
 
 	targetDir := filepath.Join(*outputDir, *pkgName)
-	if err := os.MkdirAll(targetDir, 0755); err != nil {
+	if err := os.MkdirAll(targetDir, 0o755); err != nil {
 		logger.Error("failed to create output directory", "err", err)
 		os.Exit(1)
 	}
@@ -136,21 +136,18 @@ type cli struct {
 	logger *slog.Logger
 }
 
-var (
-	allowedVariants = map[string]struct{}{
-		"dbg": {},
-		// "dev": {},
-		// "fts":     {},
-		// "legacy":  {},
-		// "libintl": {},
-		// "locales": {},
-		// "obstack": {},
-		// "utils":   {},
-	}
-)
+var allowedVariants = map[string]struct{}{
+	"dbg": {},
+	// "dev": {},
+	// "fts":     {},
+	// "legacy":  {},
+	// "libintl": {},
+	// "locales": {},
+	// "obstack": {},
+	// "utils":   {},
+}
 
 func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []string, versionConstraint string) ([]*pkg, error) {
-
 	packages := map[string]*pkg{}
 	for _, arch := range architectures {
 		pkgUrl, err := url.JoinPath(pkgUrl, convertArch(arch))
@@ -371,7 +368,7 @@ func (c *cli) extract(ctx context.Context, packages []*pkg, outputDir string) er
 
 			target := filepath.Join(targetDir, hdr.Name)
 			if hdr.FileInfo().IsDir() {
-				if err := os.MkdirAll(target, 0755); err != nil {
+				if err := os.MkdirAll(target, 0o755); err != nil {
 					return fmt.Errorf("failed to create directory: %w", err)
 				}
 				continue

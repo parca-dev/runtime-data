@@ -1,4 +1,4 @@
-package glibc
+package libc
 
 import (
 	"bytes"
@@ -9,8 +9,8 @@ import (
 )
 
 type Layout struct {
-	PThreadSpecific1stblock int64 `yaml:"pthread_specific_1stblock"`
 	PThreadSize             int64 `yaml:"pthread_size"`
+	PThreadSpecific1stblock int64 `yaml:"pthread_specific_1stblock"`
 	PThreadKeyData          int64 `yaml:"pthread_key_data"`
 	PThreadKeyDataSize      int64 `yaml:"pthread_key_data_size"`
 }

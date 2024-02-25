@@ -1,2 +1,4 @@
+pthread_key_data: 8
+pthread_key_data_size: 16
 pthread_size: 200
-pthread_tsd: 128
+pthread_specific_1stblock: 128

@@ -41,8 +41,8 @@ jobs:
       - name: Check
         run: make check
 
-      - name: Format
-        run: make format
+      - name: Lint
+        run: make lint
 
       - name: Build
         run: make build

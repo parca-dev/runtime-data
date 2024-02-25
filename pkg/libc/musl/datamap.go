@@ -6,17 +6,17 @@ import (
 )
 
 type musl struct {
-	PThreadSize int64 `sizeof:"__pthread" yaml:"pthread_size"`
-	PThreadTSD  int64 `offsetof:"__pthread.tsd" yaml:"pthread_tsd"`
+	PThreadSize int64 `sizeof:"__pthread"`
+	PThreadTSD  int64 `offsetof:"__pthread.tsd"`
 }
 
 func (m *musl) Layout() runtimedata.RuntimeData {
 	return &libc.Layout{
 		PThreadSize:             m.PThreadSize,
 		PThreadSpecific1stblock: m.PThreadTSD,
-		// TODO(kakkoyun): Extract.
-		PThreadKeyData:     8,
-		PThreadKeyDataSize: 16,
+		PThreadKeyData:          0, // unused.
+		// pthread_key_t: TYPEDEF unsigned pthread_key_t;
+		PThreadKeyDataSize: 8,
 	}
 }
 

@@ -1,6 +1,9 @@
 package glibc
 
-import "github.com/parca-dev/runtime-data/pkg/runtimedata"
+import (
+	"github.com/parca-dev/runtime-data/pkg/libc"
+	"github.com/parca-dev/runtime-data/pkg/runtimedata"
+)
 
 type glibc struct {
 	PThreadSpecific1stblock int64 `offsetof:"pthread.specific_1stblock" yaml:"pthread_specific_1stblock"`
@@ -10,7 +13,7 @@ type glibc struct {
 }
 
 func (g *glibc) Layout() runtimedata.RuntimeData {
-	return &Layout{
+	return &libc.Layout{
 		PThreadSpecific1stblock: g.PThreadSpecific1stblock,
 		PThreadSize:             g.PThreadSize,
 		PThreadKeyData:          g.PThreadKeyData,

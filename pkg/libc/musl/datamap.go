@@ -1,6 +1,9 @@
 package musl
 
-import "github.com/parca-dev/runtime-data/pkg/runtimedata"
+import (
+	"github.com/parca-dev/runtime-data/pkg/libc"
+	"github.com/parca-dev/runtime-data/pkg/runtimedata"
+)
 
 type musl struct {
 	PThreadSize int64 `sizeof:"__pthread" yaml:"pthread_size"`
@@ -8,9 +11,12 @@ type musl struct {
 }
 
 func (m *musl) Layout() runtimedata.RuntimeData {
-	return &Layout{
-		PthreadSize: m.PThreadSize,
-		PthreadTSD:  m.PThreadTSD,
+	return &libc.Layout{
+		PThreadSize:             m.PThreadSize,
+		PThreadSpecific1stblock: m.PThreadTSD,
+		// TODO(kakkoyun): Extract.
+		PThreadKeyData:     8,
+		PThreadKeyDataSize: 16,
 	}
 }
 

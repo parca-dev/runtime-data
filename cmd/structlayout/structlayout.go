@@ -93,9 +93,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var (
-		input = fSet.Arg(0)
-	)
+	input := fSet.Arg(0)
 	dwarfData, err := dwarfDataFromELF(input)
 	if err != nil {
 		logger.Error("failed to read DWARF data", "err", err)
@@ -137,7 +135,7 @@ func processAndWriteLayout(dwarfData *dwarf.Data, output string, version string,
 		return fmt.Errorf("failed to extract struct layout from DWARF data: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
@@ -174,7 +172,7 @@ func processAndWriteInitialState(dwarfData *dwarf.Data, output string, version s
 		return fmt.Errorf("failed to extract struct layout from DWARF data: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(output), 0o755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 

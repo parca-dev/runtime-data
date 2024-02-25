@@ -25,9 +25,7 @@ func main() {
 	}))
 
 	fSet := ff.NewFlagSet("debdownload")
-	var (
-		debuginfoDir = fSet.String('d', "debuginfo-dir", "", "directory to write the downloaded debuginfo files")
-	)
+	debuginfoDir := fSet.String('d', "debuginfo-dir", "", "directory to write the downloaded debuginfo files")
 	if err := ff.Parse(fSet, os.Args[1:]); err != nil {
 		fmt.Printf("%s\n", ffhelp.Flags(fSet))
 		if !errors.Is(err, ff.ErrHelp) {

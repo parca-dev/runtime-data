@@ -23,6 +23,8 @@ func Test_getLayoutForArch(t *testing.T) {
 			want: &libc.Layout{
 				PThreadSize:             200,
 				PThreadSpecific1stblock: 128,
+				PThreadKeyData:          8,
+				PThreadKeyDataSize:      16,
 			},
 		},
 		{
@@ -32,6 +34,8 @@ func Test_getLayoutForArch(t *testing.T) {
 			want: &libc.Layout{
 				PThreadSize:             200,
 				PThreadSpecific1stblock: 112,
+				PThreadKeyData:          8,
+				PThreadKeyDataSize:      16,
 			},
 		},
 		{
@@ -41,6 +45,8 @@ func Test_getLayoutForArch(t *testing.T) {
 			want: &libc.Layout{
 				PThreadSize:             280,
 				PThreadSpecific1stblock: 152,
+				PThreadKeyData:          8,
+				PThreadKeyDataSize:      16,
 			},
 		},
 		{
@@ -50,6 +56,8 @@ func Test_getLayoutForArch(t *testing.T) {
 			want: &libc.Layout{
 				PThreadSize:             280,
 				PThreadSpecific1stblock: 152,
+				PThreadKeyData:          8,
+				PThreadKeyDataSize:      16,
 			},
 		},
 	}

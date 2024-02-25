@@ -21,7 +21,7 @@ import (
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: slog.LevelInfo,
 	}))
 
 	fSet := ff.NewFlagSet("debdownload")

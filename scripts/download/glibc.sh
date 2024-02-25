@@ -70,6 +70,9 @@ for arch in $BIN_DIR/$PACKAGE_NAME/*; do
                     if [ ! -f "$target" ]; then
                         target="$variant"/lib/"$linuxArch"-linux-gnu/libc.so.6
                     fi
+                    if [ ! -f "$target" ]; then
+                        target="$variant"/usr/lib/"$linuxArch"-linux-gnu/libc.so.6
+                    fi
                     dbginfo=$(./debuginfofind -d "$version"/dbg $target || true)
                     if [ -n "$dbginfo" ]; then
                         dbgTarget="$DEBUGINFO_DIR"/$PACKAGE_NAME/$a/$v/

@@ -27,7 +27,7 @@ for arch in "${SOURCE_DIR}"/*; do
             v=$(basename "${version}")
             a=$(basename "${arch}")
             echo "Running structlayout against glibc ${v} for ${a}..."
-            ./structlayout -r glibc -v "${v}" -o "${TARGET_DIR}/${a}" "${dbgfile}"
+            ./structlayout -r glibc -v "${v}" -o "${TARGET_DIR}/${a}" "${dbgfile}" 
         done
     done
 done

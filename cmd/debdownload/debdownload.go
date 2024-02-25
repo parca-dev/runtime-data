@@ -2,7 +2,6 @@ package main
 
 import (
 	"archive/tar"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -19,6 +18,8 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/blakesmith/ar"
+	"github.com/klauspost/compress/gzip"
+	"github.com/klauspost/compress/zstd"
 	"github.com/peterbourgon/ff/v4"
 	"github.com/peterbourgon/ff/v4/ffhelp"
 	"github.com/ulikunitz/xz"
@@ -228,10 +229,6 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 							}
 						}
 						variant := strings.TrimPrefix(matches[2], "-")
-						if c.sv == ubuntu && variant == "" {
-							// No need to download the main package for Ubuntu.
-							continue
-						}
 						if variant != "" {
 							if _, ok := allowedVariants[variant]; !ok {
 								continue
@@ -356,9 +353,10 @@ func (c *cli) extract(_ context.Context, packages []*pkg, outputDir string) erro
 			continue
 		}
 
-		r := ar.NewReader(f)
+		var extracted bool
+		ar := ar.NewReader(f)
 		for {
-			hdr, err := r.Next()
+			hdr, err := ar.Next()
 			if err == io.EOF {
 				break
 			}
@@ -366,23 +364,43 @@ func (c *cli) extract(_ context.Context, packages []*pkg, outputDir string) erro
 				return fmt.Errorf("failed to read next entry: %w", err)
 			}
 
-			if hdr.Name != "data.tar.xz" {
+			if !strings.HasPrefix(hdr.Name, "data.tar.") {
 				continue
 			}
 
-			c.logger.Info("extracting tar.xz", "file", hdr.Name)
+			c.logger.Info("extracting data.tar", "file", hdr.Name)
 
-			content, err := io.ReadAll(r)
-			if err != nil {
-				return fmt.Errorf("failed to read content: %w", err)
+			var r io.Reader
+			ext := filepath.Ext(hdr.Name)
+			switch ext {
+			case ".xz":
+				c.logger.Info("extracting tar.xz", "file", hdr.Name)
+
+				r, err = xz.NewReader(ar)
+				if err != nil {
+					return fmt.Errorf("failed to create xz reader: %w", err)
+				}
+			case ".zst":
+				c.logger.Info("extracting tar.zst", "file", hdr.Name)
+
+				r, err = zstd.NewReader(ar)
+				if err != nil {
+					return fmt.Errorf("failed to create zstd reader: %w", err)
+				}
+
+			case ".gz":
+				c.logger.Info("extracting tar.gz", "file", hdr.Name)
+
+				r, err = gzip.NewReader(ar)
+				if err != nil {
+					return fmt.Errorf("failed to create gzip reader: %w", err)
+				}
+
+			default:
+				return fmt.Errorf("unsupported extension: %s", ext)
 			}
 
-			xzr, err := xz.NewReader(bytes.NewReader(content))
-			if err != nil {
-				return fmt.Errorf("failed to create xz reader: %w", err)
-			}
-
-			tr := tar.NewReader(xzr)
+			tr := tar.NewReader(r)
 			for {
 				hdr, err := tr.Next()
 				if err == io.EOF {
@@ -412,7 +430,11 @@ func (c *cli) extract(_ context.Context, packages []*pkg, outputDir string) erro
 				if _, err := io.Copy(f, tr); err != nil {
 					return fmt.Errorf("failed to copy file: %w", err)
 				}
+				extracted = true
 			}
+		}
+		if !extracted {
+			return fmt.Errorf("failed to extract any files")
 		}
 	}
 	return nil

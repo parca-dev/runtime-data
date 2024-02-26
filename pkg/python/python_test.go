@@ -65,8 +65,9 @@ func TestGetLayout(t *testing.T) {
 					NativeThreadID: -1,
 					CFrame:         -1,
 				},
-				PyTupleObject: PyTupleObject{ObItem: 24},
-				PyTypeObject:  PyTypeObject{TPName: 24},
+				PyTupleObject:      PyTupleObject{ObItem: 24},
+				PyTypeObject:       PyTypeObject{TPName: 24},
+				PyInterpreterFrame: PyInterpreterFrame{Owner: -1},
 			},
 		},
 		{
@@ -100,8 +101,9 @@ func TestGetLayout(t *testing.T) {
 					NativeThreadID: -1,
 					CFrame:         -1,
 				},
-				PyTupleObject: PyTupleObject{ObItem: 24},
-				PyTypeObject:  PyTypeObject{TPName: 24},
+				PyTupleObject:      PyTupleObject{ObItem: 24},
+				PyTypeObject:       PyTypeObject{TPName: 24},
+				PyInterpreterFrame: PyInterpreterFrame{Owner: -1},
 			},
 		},
 		{
@@ -150,6 +152,9 @@ func TestGetLayout(t *testing.T) {
 				PyTupleObject: PyTupleObject{
 					ObItem: 24,
 				},
+				PyInterpreterFrame: PyInterpreterFrame{
+					Owner: 69,
+				},
 			},
 		},
 		{
@@ -197,6 +202,9 @@ func TestGetLayout(t *testing.T) {
 				},
 				PyTupleObject: PyTupleObject{
 					ObItem: 24,
+				},
+				PyInterpreterFrame: PyInterpreterFrame{
+					Owner: 70,
 				},
 			},
 		},

@@ -393,8 +393,8 @@ type python313 struct {
 	PyFrameObjectFLocalsplus          int64 `offsetof:"_PyInterpreterFrame.localsplus"`
 	PyCodeObjectCoFilename            int64 `offsetof:"PyCodeObject.co_filename"`
 	PyCodeObjectCoName                int64 `offsetof:"PyCodeObject.co_name"`
-	PyCodeObjectCoVarNames            int64 `offsetof:"PyCodeObject.co_varnames"`
 	PyCodeObjectCoFirstlineno         int64 `offsetof:"PyCodeObject.co_firstlineno"`
+	PyCodeObjectCoVarNames            int64 `offsetof:"PyCodeObject.co_varnames"`
 	PyTupleObjectObItem               int64 `offsetof:"PyTupleObject.ob_item"`
 }
 
@@ -413,13 +413,13 @@ func (p python313) Layout() runtimedata.RuntimeData {
 		PyThreadState: PyThreadState{
 			Interp:         p.PyThreadStateInterp,
 			Next:           p.PyThreadStateNext,
-			Frame:          doesNotExist,
+			Frame:          p.PyThreadStateCurrentFrame,
 			ThreadID:       p.PyThreadStateThreadID,
 			NativeThreadID: p.PyThreadStateNativeThreadID,
-			CFrame:         p.PyThreadStateCurrentFrame,
+			CFrame:         doesNotExist,
 		},
 		PyCFrame: PyCFrame{
-			CurrentFrame: 0,
+			CurrentFrame: doesNotExist,
 		},
 		PyInterpreterState: PyInterpreterState{
 			TStateHead: p.PyInterpreterStateTstateHead + p.PyInterpreterStateIsPythreadsHead,

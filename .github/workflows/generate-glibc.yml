@@ -7,8 +7,8 @@ on:
       - release
     paths:
       - ".github/workflows/generate-glibc.yml"
-      - "pkg/libc/glibc"
-      - "scripts"
+      - "pkg/libc/glibc/**"
+      - "scripts/**"
       - "Makefile"
 
 concurrency:

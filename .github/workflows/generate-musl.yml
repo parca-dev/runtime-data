@@ -7,8 +7,8 @@ on:
       - release
     paths:
       - ".github/workflows/generate-musl.yml"
-      - "pkg/libc/musl"
-      - "scripts"
+      - "pkg/libc/musl/**"
+      - "scripts/**"
       - "Makefile"
 
 concurrency:

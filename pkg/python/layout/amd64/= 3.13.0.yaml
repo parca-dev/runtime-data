@@ -1,5 +1,5 @@
 py_cframe:
-    current_frame: 0
+    current_frame: 64
 py_code_object:
     co_filename: 112
     co_firstlineno: 68

@@ -8,6 +8,7 @@ on:
       - release-*
     paths:
       - ".github/workflows/generate-ruby.yml"
+      - "pkg/ruby/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}

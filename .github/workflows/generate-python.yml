@@ -7,6 +7,7 @@ on:
       - release
     paths:
       - ".github/workflows/generate-python.yml"
+      - "pkg/python/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}

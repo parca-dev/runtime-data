@@ -1,5 +1,5 @@
 py_cframe:
-    current_frame: 0
+    current_frame: -1
 py_code_object:
     co_filename: 112
     co_firstlineno: 68
@@ -20,8 +20,8 @@ py_string:
     data: 40
     size: -1
 py_thread_state:
-    cframe: 64
-    frame: -1
+    cframe: -1
+    frame: 64
     interp: 16
     native_thread_id: 152
     next: 8

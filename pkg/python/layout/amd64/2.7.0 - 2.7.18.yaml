@@ -10,6 +10,8 @@ py_frame_object:
     f_code: 32
     f_lineno: 124
     f_localsplus: 376
+py_interpreter_frame:
+    owner: -1
 py_interpreter_state:
     tstate_head: 8
 py_object:

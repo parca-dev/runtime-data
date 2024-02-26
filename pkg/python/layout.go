@@ -82,6 +82,11 @@ type PyFrameObject struct {
 	FLocalsplus int64 `yaml:"f_localsplus"`
 }
 
+// PyInterpreterFrame
+type PyInterpreterFrame struct {
+	Owner int64 `yaml:"owner"`
+}
+
 type Layout struct {
 	PyCFrame           PyCFrame           `yaml:"py_cframe"`
 	PyCodeObject       PyCodeObject       `yaml:"py_code_object"`
@@ -93,6 +98,7 @@ type Layout struct {
 	PyThreadState      PyThreadState      `yaml:"py_thread_state"`
 	PyTupleObject      PyTupleObject      `yaml:"py_tuple_object"`
 	PyTypeObject       PyTypeObject       `yaml:"py_type_object"`
+	PyInterpreterFrame PyInterpreterFrame `yaml:"py_interpreter_frame"`
 }
 
 func (pvo Layout) Data() ([]byte, error) {

@@ -15,7 +15,7 @@ py_interpreter_state:
 py_object:
     ob_type: 8
 py_runtime_state:
-    interp_magin: 352
+    interp_main: 352
 py_string:
     data: 40
     size: -1

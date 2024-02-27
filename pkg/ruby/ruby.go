@@ -22,20 +22,16 @@ import (
 	"sync"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/parca-dev/runtime-data/pkg/runtimedata"
 	"gopkg.in/yaml.v3"
 )
-
-type Key struct {
-	Index      int
-	Constraint string
-}
 
 const layoutDir = "layout"
 
 var (
 	//go:embed layout/*/*.yaml
 	generatedLayouts embed.FS
-	structLayouts    = map[Key]*Layout{}
+	structLayouts    = map[runtimedata.Key]runtimedata.RuntimeData{}
 	once             = &sync.Once{}
 )
 
@@ -47,7 +43,7 @@ func init() {
 	}
 }
 
-func loadLayouts() (map[Key]*Layout, error) {
+func loadLayouts() (map[runtimedata.Key]runtimedata.RuntimeData, error) {
 	var err error
 	once.Do(func() {
 		entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, runtime.GOARCH))
@@ -78,7 +74,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 			if err != nil {
 				return
 			}
-			key := Key{Index: i, Constraint: constr.String()}
+			key := runtimedata.Key{Index: i, Constraint: constr.String()}
 			structLayouts[key] = &lyt
 			i++
 		}
@@ -87,7 +83,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 }
 
 // GetLayout returns the matching layout for the given version.
-func GetLayout(v *semver.Version) (Key, *Layout, error) {
+func GetLayout(v *semver.Version) (runtimedata.Key, runtimedata.RuntimeData, error) {
 	for k, l := range structLayouts {
 		constr, err := semver.NewConstraint(k.Constraint)
 		if err != nil {
@@ -97,10 +93,10 @@ func GetLayout(v *semver.Version) (Key, *Layout, error) {
 			return k, l, nil
 		}
 	}
-	return Key{}, nil, errors.New("not found")
+	return runtimedata.Key{}, nil, errors.New("not found")
 }
 
 // GetLayouts returns all the layouts for the supported versions.
-func GetLayouts() (map[Key]*Layout, error) {
+func GetLayouts() (map[runtimedata.Key]runtimedata.RuntimeData, error) {
 	return structLayouts, nil
 }

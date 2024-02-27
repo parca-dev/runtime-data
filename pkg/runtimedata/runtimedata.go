@@ -18,6 +18,11 @@ type RuntimeData interface {
 	Data() ([]byte, error)
 }
 
+type Key struct {
+	Index      int
+	Constraint string
+}
+
 type Version struct {
 	Major uint64 `yaml:"major"`
 	Minor uint64 `yaml:"minor"`

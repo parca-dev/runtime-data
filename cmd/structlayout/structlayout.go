@@ -14,6 +14,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/parca-dev/runtime-data/pkg/datamap"
+	"github.com/parca-dev/runtime-data/pkg/java/openjdk"
 	"github.com/parca-dev/runtime-data/pkg/libc/glibc"
 	"github.com/parca-dev/runtime-data/pkg/libc/musl"
 	"github.com/parca-dev/runtime-data/pkg/python"
@@ -87,6 +88,11 @@ func main() {
 		layoutMap = musl.DataMapForLayout(version)
 		if outputDir == "" {
 			outputDir = "pkg/libc/musl/layout"
+		}
+	case "java":
+		layoutMap = openjdk.DataMapForLayout(version)
+		if outputDir == "" {
+			outputDir = "pkg/openjdk"
 		}
 	default:
 		logger.Error("invalid offset map module", "mod", runtime)

@@ -17,9 +17,9 @@ func (dataMap *DataMap) ReadFromDWARF(dwarfData *dwarf.Data) error {
 			continue
 		}
 
-		entry, err := findStructType(dwarfData, entries)
+		entry, err := findCompositeType(dwarfData, entries)
 		if err != nil {
-			return fmt.Errorf("failed to find struct type (%s): %w", rn.Type, err)
+			return fmt.Errorf("failed to find composite type (%s): %w", rn.Type, err)
 		}
 
 		if err := process(dwarfData, entry, rn); err != nil {
@@ -30,6 +30,11 @@ func (dataMap *DataMap) ReadFromDWARF(dwarfData *dwarf.Data) error {
 		}
 	}
 	return nil
+}
+
+func isCompositeType(entry *dwarf.Entry) bool {
+	
+	return entry.Tag == dwarf.TagStructType || entry.Tag == dwarf.TagClassType
 }
 
 // findEntries finds the entries with the given name in the DWARF data.
@@ -46,7 +51,7 @@ func findEntries(dwarfData *dwarf.Data, name string) ([]*dwarf.Entry, error) {
 			return nil, fmt.Errorf("unexpected error while reading DWARF data: %w", err)
 		}
 
-		if entry.Tag != dwarf.TagStructType && entry.Tag != dwarf.TagTypedef {
+		if !isCompositeType(entry) && entry.Tag != dwarf.TagTypedef {
 			continue
 		}
 
@@ -65,10 +70,10 @@ func findEntries(dwarfData *dwarf.Data, name string) ([]*dwarf.Entry, error) {
 	return entries, nil
 }
 
-// findStructType finds the struct type in the given entries.
-func findStructType(dwarfData *dwarf.Data, entries []*dwarf.Entry) (*dwarf.Entry, error) {
+// findCompositeType finds the struct type in the given entries.
+func findCompositeType(dwarfData *dwarf.Data, entries []*dwarf.Entry) (*dwarf.Entry, error) {
 	for _, entry := range entries {
-		if entry.Tag == dwarf.TagStructType {
+		if isCompositeType(entry) {
 			if !entry.Children {
 				continue
 			}
@@ -80,7 +85,7 @@ func findStructType(dwarfData *dwarf.Data, entries []*dwarf.Entry) (*dwarf.Entry
 			return nil, fmt.Errorf("failed to get type: %w", err)
 		}
 
-		if typeEntry.Tag != dwarf.TagStructType {
+		if !isCompositeType(typeEntry) {
 			continue
 		}
 
@@ -90,7 +95,7 @@ func findStructType(dwarfData *dwarf.Data, entries []*dwarf.Entry) (*dwarf.Entry
 
 		return typeEntry, nil
 	}
-	return nil, errors.New("no struct type found")
+	return nil, errors.New("no composite(struct|class) type found")
 }
 
 // process processes the given node in the route using the DWARF data.
@@ -101,10 +106,6 @@ func process(dwarfData *dwarf.Data, entry *dwarf.Entry, rn *RouteNode) error {
 		return processLeaf(dwarfData, entry, rn, 0)
 	}
 
-	// offset, err := offsetOf(dwarfData, entry, rn.Next.Type)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to get offset of field (%s): %w", rn.Next.Type, err)
-	// }
 	return processNested(dwarfData, entry, rn.Next, 0)
 }
 
@@ -265,15 +266,15 @@ func processLeaf(dwarfData *dwarf.Data, entry *dwarf.Entry, rn *RouteNode, offse
 			}
 			offset := offsetAttr.(int64) + offset
 			if err := field.Set(offset); err != nil {
-				return fmt.Errorf("failed to set offset: %w", err)
+				return fmt.Errorf("failed to set offset of (%s): %w", fieldName, err)
 			}
 		case OpSizeOf:
 			size, err := sizeOf(dwarfData, entry)
 			if err != nil {
-				return fmt.Errorf("failed to get size: %w", err)
+				return fmt.Errorf("failed to get size of (%s): %w", fieldName, err)
 			}
 			if err := field.Set(size); err != nil {
-				return fmt.Errorf("failed to set size: %w", err)
+				return fmt.Errorf("failed to set size of (%s): %w", fieldName, err)
 			}
 		}
 	}
@@ -297,7 +298,10 @@ func typeOf(dwarfData *dwarf.Data, entry *dwarf.Entry) (*dwarf.Entry, error) {
 	attrs := attrs(entry)
 	typeAttr, ok := attrs[dwarf.AttrType]
 	if !ok {
-		return nil, errors.New("no type attribute")
+		typeAttr, ok = attrs[dwarf.AttrContainingType]
+		if !ok {
+			return nil, fmt.Errorf("no type attribute found for (%s)", nameOf(entry))
+		}
 	}
 	typeReader := dwarfData.Reader()
 	typeReader.Seek(typeAttr.(dwarf.Offset))
@@ -317,8 +321,17 @@ func sizeOf(dwarfData *dwarf.Data, entry *dwarf.Entry) (int64, error) {
 
 	typeEntry, err := typeOf(dwarfData, entry)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get type: %w", err)
+		return 0, fmt.Errorf("failed to get type of (%s): %w", nameOf(entry), err)
 	}
 
 	return sizeOf(dwarfData, typeEntry)
+}
+
+func nameOf(entry *dwarf.Entry) string {
+	attrs := attrs(entry)
+	nameAttr, ok := attrs[dwarf.AttrName]
+	if !ok {
+		return ""
+	}
+	return nameAttr.(string)
 }

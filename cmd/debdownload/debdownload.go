@@ -43,9 +43,8 @@ const (
 	DownloadSinglePackageTimeout = 90 * time.Second
 )
 
-var allowedVariants = map[string]struct{}{
+var defaultAllowedVariants = map[string]struct{}{
 	"dbg": {},
-	// "dev": {},
 }
 
 type packageSourceVariant int
@@ -68,6 +67,7 @@ func main() {
 		pkgName           = fSet.String('p', "package", "", "package name to download")
 		architectures     = fSet.StringList('a', "arch", "architectures to download")
 		versionConstraint = fSet.String('c', "constraint", "", "version constraints to download")
+		variant           = fSet.StringList('v', "variants", "variants of the package to download")
 	)
 	if err := ff.Parse(fSet, os.Args[1:]); err != nil {
 		fmt.Printf("%s\n", ffhelp.Flags(fSet))
@@ -114,7 +114,15 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	packages, err := cli.list(ctx, *url, *pkgName, *architectures, *versionConstraint)
+	variants := map[string]struct{}{}
+	maps.Copy(variants, defaultAllowedVariants)
+	if len(*variant) > 0 {
+		for _, v := range *variant {
+			variants[v] = struct{}{}
+		}
+	}
+
+	packages, err := cli.list(ctx, *url, *pkgName, *architectures, *versionConstraint, variants)
 	if err != nil {
 		logger.Error("failed to list packages", "err", err)
 		os.Exit(1)
@@ -165,7 +173,13 @@ type pkg struct {
 	downloadedArchive string
 }
 
-func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []string, versionConstraint string) ([]*pkg, error) {
+func (c *cli) list(
+	ctx context.Context,
+	pkgUrl, pkgName string,
+	architectures []string,
+	versionConstraint string,
+	variants map[string]struct{},
+) ([]*pkg, error) {
 	c.logger.Info("listing packages", "url", pkgUrl)
 
 	ctx, cancel := context.WithTimeout(ctx, FetchListTimeout)
@@ -217,7 +231,13 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 			for _, a := range n.Attr {
 				if a.Key == "href" {
 					if matches := matcher.FindStringSubmatch(a.Val); len(matches) > 0 {
-						version := semver.MustParse(strings.ReplaceAll(matches[3], "~", "+"))
+						v := strings.ReplaceAll(matches[3], "~", "+")
+						c.logger.Info("found package", "version", v, "arch", matches[4], "variant", matches[2])
+						version, err := semver.NewVersion(v)
+						if err != nil {
+							c.logger.Info("failed to parse version", "version", v, "err", err)
+							continue
+						}
 						if versionConstraint != "" {
 							match, reasons := mustConstraint(semver.NewConstraint(versionConstraint)).Validate(version)
 							if !match {
@@ -228,7 +248,8 @@ func (c *cli) list(ctx context.Context, pkgUrl, pkgName string, architectures []
 						}
 						variant := strings.TrimPrefix(matches[2], "-")
 						if variant != "" {
-							if _, ok := allowedVariants[variant]; !ok {
+							variant = strings.TrimSpace(variant)
+							if _, ok := variants[variant]; !ok {
 								continue
 							}
 						}

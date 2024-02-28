@@ -58,7 +58,14 @@ func (d *Extractor) Set(value int64) error {
 	if !d.targetValue.CanSet() {
 		return fmt.Errorf("field from struct %s is not settable", d.targetValue.Type().Name())
 	}
-	d.targetValue.SetInt(value)
+	switch d.targetValue.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		d.targetValue.SetInt(value)
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		d.targetValue.SetUint(uint64(value))
+	default:
+		return fmt.Errorf("field from struct %s is not of type int or uint, type: %s", d.targetValue.Type().Name(), d.targetValue.Kind())
+	}
 	return nil
 }
 

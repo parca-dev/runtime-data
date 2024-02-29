@@ -39,7 +39,7 @@ type openjdk struct {
 
 	MemRegionStart uint64 `offsetof:"MemRegion._start"`
 	MemRegionEnd   uint64 `offsetof:"MemRegion._end"`
-	HeapWordSize   uint64 `sizeof:"HeapWord"`
+	// HeapWordSize   uint64 `sizeof:"HeapWord"`
 
 	VMStructEntryTypeName  uint64 `offsetof:"VMStructEntry.typeName"`
 	VMStructEntryFieldName uint64 `offsetof:"VMStructEntry.fieldName"`
@@ -126,7 +126,7 @@ func (oj openjdk) Layout() runtimedata.RuntimeData {
 		CollectedHeapReserve: oj.CollectedHeapReserve,
 		MemRegionStart:       oj.MemRegionStart,
 		MemRegionEnd:         oj.MemRegionEnd,
-		HeapWordSize:         oj.HeapWordSize,
+		// HeapWordSize:         oj.HeapWordSize,
 
 		VMStructEntryTypeName:  oj.VMStructEntryTypeName,
 		VMStructEntryFieldName: oj.VMStructEntryFieldName,

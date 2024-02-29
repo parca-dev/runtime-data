@@ -33,7 +33,6 @@ func (dataMap *DataMap) ReadFromDWARF(dwarfData *dwarf.Data) error {
 }
 
 func isCompositeType(entry *dwarf.Entry) bool {
-	
 	return entry.Tag == dwarf.TagStructType || entry.Tag == dwarf.TagClassType
 }
 
@@ -70,11 +69,20 @@ func findEntries(dwarfData *dwarf.Data, name string) ([]*dwarf.Entry, error) {
 	return entries, nil
 }
 
-// findCompositeType finds the struct type in the given entries.
+func isDeclaration(entry *dwarf.Entry) bool {
+	attributes := attrs(entry)
+	_, ok := attributes[dwarf.AttrDeclaration]
+	return ok
+}
+
+// findCompositeType finds the composite type in the given entries.
 func findCompositeType(dwarfData *dwarf.Data, entries []*dwarf.Entry) (*dwarf.Entry, error) {
 	for _, entry := range entries {
 		if isCompositeType(entry) {
 			if !entry.Children {
+				continue
+			}
+			if isDeclaration(entry) {
 				continue
 			}
 			return entry, nil
@@ -90,6 +98,10 @@ func findCompositeType(dwarfData *dwarf.Data, entries []*dwarf.Entry) (*dwarf.En
 		}
 
 		if !typeEntry.Children {
+			continue
+		}
+
+		if isDeclaration(typeEntry) {
 			continue
 		}
 
@@ -294,14 +306,18 @@ func attrs(entry *dwarf.Entry) map[dwarf.Attr]any {
 	return attrs
 }
 
+func printAttrs(entry *dwarf.Entry) {
+	attrs := attrs(entry)
+	for k, v := range attrs {
+		fmt.Printf("%s: %v\n", k, v)
+	}
+}
+
 func typeOf(dwarfData *dwarf.Data, entry *dwarf.Entry) (*dwarf.Entry, error) {
 	attrs := attrs(entry)
 	typeAttr, ok := attrs[dwarf.AttrType]
 	if !ok {
-		typeAttr, ok = attrs[dwarf.AttrContainingType]
-		if !ok {
-			return nil, fmt.Errorf("no type attribute found for (%s)", nameOf(entry))
-		}
+		return nil, fmt.Errorf("no type attribute found for (%s)", nameOf(entry))
 	}
 	typeReader := dwarfData.Reader()
 	typeReader.Seek(typeAttr.(dwarf.Offset))

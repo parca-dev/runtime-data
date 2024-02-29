@@ -12,6 +12,7 @@ import (
 const (
 	tagOffsetOf = "offsetof"
 	tagSizeOf   = "sizeof"
+	tagStatic   = "static"
 )
 
 type Operation int
@@ -49,8 +50,9 @@ type DataMap struct {
 
 type Extractor struct {
 	Source string
+	Op     Operation
+	Static bool
 
-	Op          Operation
 	targetValue *reflect.Value
 }
 
@@ -167,17 +169,25 @@ func New(layoutMap any) (*DataMap, error) {
 func readRoutesFromMapStruct(st reflect.Type, sv reflect.Value) ([]*RouteNode, error) {
 	var (
 		groupBy = make(map[string]*RouteNode)
-		add     = func(path string, name string, op Operation, fieldValue reflect.Value) {
+		add     = func(path string, name string, op Operation, fieldValue reflect.Value, static bool) {
 			if r, exists := groupBy[path]; exists {
 				r.Leaf().Extractors = append(r.Leaf().Extractors, &Extractor{
-					Source: name, Op: op, targetValue: &fieldValue,
+					Source:      name,
+					Op:          op,
+					Static:      static,
+					targetValue: &fieldValue,
 				},
 				)
 				return
 			}
 			route := newRouteFromTagValue(path)
 			route.Leaf().Extractors = []*Extractor{
-				{Source: name, Op: op, targetValue: &fieldValue},
+				{
+					Source:      name,
+					Op:          op,
+					Static:      static,
+					targetValue: &fieldValue,
+				},
 			}
 			groupBy[path] = route
 		}
@@ -229,7 +239,7 @@ func readRoutesFromMapStruct(st reflect.Type, sv reflect.Value) ([]*RouteNode, e
 			path = strings.Join(parts[:len(parts)-1], ".")
 			fieldName = parts[len(parts)-1]
 		}
-		add(path, fieldName, op, fieldValue)
+		add(path, fieldName, op, fieldValue, field.Tag.Get(tagStatic) == "true")
 	}
 
 	if len(groupBy) == 0 {

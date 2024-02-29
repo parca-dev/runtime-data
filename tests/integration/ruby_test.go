@@ -59,12 +59,11 @@ func TestRubyIntegration(t *testing.T) {
 				t.Fatalf("elf.Open() = %v", err)
 			}
 
-			dwarfData, err := f.DWARF()
-			if err != nil {
-				t.Fatalf("f.DWARF() = %v", err)
-			}
+			t.Cleanup(func() {
+				f.Close()
+			})
 
-			if err := dm.ReadFromDWARF(dwarfData); err != nil {
+			if err := dm.ReadFromDWARF(f); err != nil {
 				t.Errorf("input: %s", input)
 				t.Fatalf("datamap.ReadFromDWARF() = %v", err)
 			}

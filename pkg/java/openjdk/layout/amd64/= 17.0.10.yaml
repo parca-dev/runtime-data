@@ -8,8 +8,8 @@ code_blob_frame_size: 28
 code_blob_header_size: 16
 code_blob_name: 96
 code_blob_size: 104
-code_cache_end: 0
-code_cache_start: 0
+code_cache_end: 20129200
+code_cache_start: 20129208
 code_heap_log2_segment_size: 256
 code_heap_memory: 8
 code_heap_segmap: 120
@@ -41,7 +41,7 @@ nmethod_metadata_offset: 260
 nmethod_orig_pc_offset: 300
 nmethod_scopes_data_begin: 120
 nmethod_scopes_pcs_offset: 268
-nmethod_size: 344
+nmethod_size: 352
 oop_desc_metadata: 8
 oop_desc_size: 16
 pc_desc_pc_offset: 0

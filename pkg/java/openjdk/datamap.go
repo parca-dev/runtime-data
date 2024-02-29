@@ -37,8 +37,8 @@ func DataMapForLayout(v string) runtimedata.LayoutMap {
 type openjdk struct {
 	CollectedHeapReserve uint64 `offsetof:"CollectedHeap._reserved"`
 
-	MemRegionStart uint64 `offsetof:"MemRegion._start"`
-	MemRegionEnd   uint64 `offsetof:"MemRegion._end"`
+	MemRegionStart    uint64 `offsetof:"MemRegion._start"`
+	MemRegionWordSize uint64 `offsetof:"MemRegion._word_size"`
 	// HeapWordSize   uint64 `sizeof:"HeapWord"`
 
 	VMStructEntryTypeName  uint64 `offsetof:"VMStructEntry.typeName"`
@@ -49,14 +49,15 @@ type openjdk struct {
 	KlassName uint64 `offsetof:"Klass._name"`
 
 	ConstantPoolHolder uint64 `offsetof:"ConstantPool._pool_holder"`
-	ConstantPoolSize   uint64 `offsetof:"ConstantPool._size"`
+	ConstantPoolSize   uint64 `sizeof:"ConstantPool"`
 
 	OOPDescMetadata uint64 `offsetof:"oopDesc._metadata"`
 	OPPDescSize     uint64 `sizeof:"oopDesc"`
 
-	AccessFlags             uint64 `offsetof:"AccessFlags._flags"`
-	SymbolLengthAndRefcount uint64 `offsetof:"Symbol._length_and_refcount"`
-	SymbolBody              uint64 `offsetof:"Symbol._body"`
+	AccessFlags           uint64 `offsetof:"AccessFlags._flags"`
+	SymbolHashAndRefcount uint64 `offsetof:"Symbol._hash_and_refcount"`
+	SymbolLength          uint64 `offsetof:"Symbol._length"`
+	SymbolBody            uint64 `offsetof:"Symbol._body"`
 
 	MethodConst       uint64 `offsetof:"Method._constMethod"`
 	MethodAccessFlags uint64 `offsetof:"Method._access_flags"`
@@ -89,13 +90,13 @@ type openjdk struct {
 	// CodeBlobFrameCompleteOffset uint64 `offsetof:"CodeBlob._frame_complete_offset"`
 	CodeBlobSize uint64 `sizeof:"CodeBlob"`
 
-	NMethodMethod             uint64 `offsetof:"nmethod._method"`
+	NMethodEntryPoint         uint64 `offsetof:"nmethod._entry_point"`
 	NMethodDependenciesOffset uint64 `offsetof:"nmethod._dependencies_offset"`
 	NMethodMetadataOffset     uint64 `offsetof:"nmethod._metadata_offset"`
-	NMethodScopesDataBegin    uint64 `offsetof:"nmethod._scopes_data_begin"`
+	NMethodScopesDataBegin    uint64 `offsetof:"CompiledMethod._scopes_data_begin"`
 	NMethodScopesPCsOffset    uint64 `offsetof:"nmethod._scopes_pcs_offset"`
 	NMethodHandlerTableOffset uint64 `offsetof:"nmethod._handler_table_offset"`
-	NMethodDeoptHandlerBegin  uint64 `offsetof:"nmethod._deopt_handler_begin"`
+	NMethodDeoptHandlerBegin  uint64 `offsetof:"CompiledMethod._deopt_handler_begin"`
 	NMethodOrigPCOffset       uint64 `offsetof:"nmethod._orig_pc_offset"`
 	// NMethodCompileID          uint64 `offsetof:"nmethod._compile_id"`
 	NMethodSize uint64 `sizeof:"nmethod"`
@@ -107,15 +108,15 @@ type openjdk struct {
 	NarrowPtrStructBase  uint64 `offsetof:"NarrowPtrStruct._base"`
 	NarrowPtrStructShift uint64 `offsetof:"NarrowPtrStruct._shift"`
 
-	// BufferBlobSize    uint64 `sizeof:"BufferBlob"`
-	// SingletonBlobSize uint64 `sizeof:"SingletonBlob"`
-	// RuntimeStubSize   uint64 `sizeof:"RuntimeStub"`
-	// SafepointBlobSize uint64 `sizeof:"SafepointBlob"`
+	BufferBlobSize    uint64 `sizeof:"BufferBlob"`
+	SingletonBlobSize uint64 `sizeof:"SingletonBlob"`
+	RuntimeStubSize   uint64 `sizeof:"RuntimeStub"`
+	SafepointBlobSize uint64 `sizeof:"SafepointBlob"`
 
-	CodeCacheStart uint64 `offsetof:"CodeCache._low_bound"`
-	CodeCacheEnd   uint64 `offsetof:"CodeCache._high_bound"`
+	CodeCacheStart uint64 `offsetof:"CodeCache._low_bound" static:"true"`
+	CodeCacheEnd   uint64 `offsetof:"CodeCache._high_bound" static:"true"`
 
-	DeoptHandler uint64 `offsetof:"CompiledMethod.deopt_handler"`
+	CompiledMethodDeoptHandlerBegin uint64 `offsetof:"CompiledMethod._deopt_handler_begin"`
 
 	HeapBlockSize uint64 `sizeof:"HeapBlock"`
 	SegmentShift  uint64 `offsetof:"ZLiveMap._segment_shift"`
@@ -125,7 +126,7 @@ func (oj openjdk) Layout() runtimedata.RuntimeData {
 	return &java.Layout{
 		CollectedHeapReserve: oj.CollectedHeapReserve,
 		MemRegionStart:       oj.MemRegionStart,
-		MemRegionEnd:         oj.MemRegionEnd,
+		MemRegionEnd:         oj.MemRegionStart + oj.MemRegionWordSize,
 		// HeapWordSize:         oj.HeapWordSize,
 
 		VMStructEntryTypeName:  oj.VMStructEntryTypeName,
@@ -141,9 +142,10 @@ func (oj openjdk) Layout() runtimedata.RuntimeData {
 		OOPDescMetadata: oj.OOPDescMetadata,
 		OPPDescSize:     oj.OPPDescSize,
 
-		AccessFlags:             oj.AccessFlags,
-		SymbolLengthAndRefcount: oj.SymbolLengthAndRefcount,
-		SymbolBody:              oj.SymbolBody,
+		AccessFlags:           oj.AccessFlags,
+		SymbolHashAndRefcount: oj.SymbolHashAndRefcount,
+		SymbolLength:          oj.SymbolLength,
+		SymbolBody:            oj.SymbolBody,
 
 		MethodConst:       oj.MethodConst,
 		MethodAccessFlags: oj.MethodAccessFlags,
@@ -168,15 +170,13 @@ func (oj openjdk) Layout() runtimedata.RuntimeData {
 		CodeBlobName:         oj.CodeBlobName,
 		CodeBlobHeaderSize:   oj.CodeBlobHeaderSize,
 		CodeBlobContentBegin: oj.CodeBlobContentBegin,
+		CodeBlobCodeBegin:    oj.CodeBlobCodeBegin,
+		CodeBlobCodeEnd:      oj.CodeBlobCodeEnd,
+		CodeBlobDataOffset:   oj.CodeBlobDataOffset,
+		CodeBlobFrameSize:    oj.CodeBlobFrameSize,
+		CodeBlobSize:         oj.CodeBlobSize,
 
-		CodeBlobCodeBegin:  oj.CodeBlobCodeBegin,
-		CodeBlobCodeEnd:    oj.CodeBlobCodeEnd,
-		CodeBlobDataOffset: oj.CodeBlobDataOffset,
-		CodeBlobFrameSize:  oj.CodeBlobFrameSize,
-
-		CodeBlobSize: oj.CodeBlobSize,
-
-		NMethodMethod:             oj.NMethodMethod,
+		NMethodEntryPoint:         oj.NMethodEntryPoint,
 		NMethodDependenciesOffset: oj.NMethodDependenciesOffset,
 		NMethodMetadataOffset:     oj.NMethodMetadataOffset,
 		NMethodScopesDataBegin:    oj.NMethodScopesDataBegin,
@@ -194,15 +194,15 @@ func (oj openjdk) Layout() runtimedata.RuntimeData {
 		NarrowPtrStructBase:  oj.NarrowPtrStructBase,
 		NarrowPtrStructShift: oj.NarrowPtrStructShift,
 
-		// BufferBlobSize:    oj.BufferBlobSize,
-		// SingletonBlobSize: oj.SingletonBlobSize,
-		// RuntimeStubSize:   oj.RuntimeStubSize,
-		// SafepointBlobSize: oj.SafepointBlobSize,
+		BufferBlobSize:    oj.BufferBlobSize,
+		SingletonBlobSize: oj.SingletonBlobSize,
+		RuntimeStubSize:   oj.RuntimeStubSize,
+		SafepointBlobSize: oj.SafepointBlobSize,
 
 		CodeCacheStart: oj.CodeCacheStart,
 		CodeCacheEnd:   oj.CodeCacheEnd,
 
-		DeoptHandler: oj.DeoptHandler,
+		CompiledMethodDeoptHandlerBegin: oj.CompiledMethodDeoptHandlerBegin,
 
 		HeapBlockSize: oj.HeapBlockSize,
 		SegmentShift:  oj.SegmentShift,

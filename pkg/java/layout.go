@@ -41,9 +41,10 @@ type Layout struct {
 	OOPDescMetadata uint64 `yaml:"oop_desc_metadata"`
 	OPPDescSize     uint64 `yaml:"oop_desc_size"`
 
-	AccessFlags             uint64 `yaml:"access_flags"`
-	SymbolLengthAndRefcount uint64 `yaml:"symbol_length_and_refcount"`
-	SymbolBody              uint64 `yaml:"symbol_body"`
+	AccessFlags           uint64 `yaml:"access_flags"`
+	SymbolHashAndRefcount uint64 `yaml:"symbol_hash_and_refcount"`
+	SymbolLength          uint64 `yaml:"symbol_length"`
+	SymbolBody            uint64 `yaml:"symbol_body"`
 
 	MethodConst       uint64 `yaml:"method_const"`
 	MethodAccessFlags uint64 `yaml:"method_access_flags"`
@@ -76,7 +77,7 @@ type Layout struct {
 	// CodeBlobFrameCompleteOffset uint64 `yaml:"code_blob_frame_complete_offset"`
 	CodeBlobSize uint64 `yaml:"code_blob_size"`
 
-	NMethodMethod             uint64 `yaml:"nmethod_method"`
+	NMethodEntryPoint         uint64 `yaml:"nmethod_entry_point"`
 	NMethodDependenciesOffset uint64 `yaml:"nmethod_dependencies_offset"`
 	NMethodMetadataOffset     uint64 `yaml:"nmethod_metadata_offset"`
 	NMethodScopesDataBegin    uint64 `yaml:"nmethod_scopes_data_begin"`
@@ -102,7 +103,7 @@ type Layout struct {
 	CodeCacheStart uint64 `yaml:"code_cache_start"`
 	CodeCacheEnd   uint64 `yaml:"code_cache_end"`
 
-	DeoptHandler uint64 `yaml:"deopt_handler"`
+	CompiledMethodDeoptHandlerBegin uint64 `yaml:"compiled_method_deopt_handler_begin"`
 
 	HeapBlockSize uint64 `yaml:"heap_block_size"`
 	SegmentShift  uint64 `yaml:"segment_shift"`

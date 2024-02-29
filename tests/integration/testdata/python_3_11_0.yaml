@@ -33,3 +33,5 @@ py_code_object:
   co_firstlineno: 72
 py_tuple_object:
   ob_item: 24
+py_interpreter_frame:
+  owner: 69

@@ -25,7 +25,7 @@ build: structlayout mergelayout debdownload  apkdownload debuginfofind
 	go build ./...
 
 .PHONY: generate
-generate: build generate/python generate/ruby generate/glibc generate/musl
+generate: build generate/python generate/ruby generate/glibc generate/musl generate/openjdk
 
 .PHONY: generate/python
 generate/python:
@@ -50,6 +50,12 @@ generate/musl:
 	./scripts/download/musl.sh
 	./scripts/structlayout/musl.sh
 	./scripts/mergelayout/musl.sh
+
+.PHONY: generate/openjdk
+generate/openjdk:
+	./scripts/download/openjdk.sh
+	./scripts/structlayout/openjdk.sh
+	./scripts/mergelayout/openjdk.sh
 
 .PHONY: clean
 clean:

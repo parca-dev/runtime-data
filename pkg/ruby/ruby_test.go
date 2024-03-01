@@ -104,7 +104,8 @@ func TestGetLayout(t *testing.T) {
 				t.Errorf("GetLayout() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if diff := cmp.Diff(*tt.want, *got, cmp.AllowUnexported(Layout{})); diff != "" {
+
+			if diff := cmp.Diff(tt.want, got.(*Layout), cmp.AllowUnexported(Layout{})); diff != "" {
 				t.Errorf("GetLayout() mismatch (-want +got):\n%s", diff)
 			}
 		})

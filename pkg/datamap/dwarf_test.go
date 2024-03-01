@@ -82,12 +82,7 @@ func TestDataMap_ReadFromDWARF(t *testing.T) {
 			}
 			defer ef.Close()
 
-			dwarfData, err := ef.DWARF()
-			if err != nil {
-				t.Fatalf("failed to read DWARF info: %v", err)
-			}
-
-			if err := dm.ReadFromDWARF(dwarfData); err != nil {
+			if err := dm.ReadFromDWARF(ef); err != nil {
 				t.Fatalf("failed to read DWARF data: %v", err)
 			}
 

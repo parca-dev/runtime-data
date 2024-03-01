@@ -337,7 +337,6 @@ type python312 struct {
 	PyInterpreterFrameOwner           int64 `offsetof:"_PyInterpreterFrame.owner"`
 	PyCodeObjectCoFilename            int64 `offsetof:"PyCodeObject.co_filename"`
 	PyCodeObjectCoName                int64 `offsetof:"PyCodeObject.co_name"`
-	PyCodeObjectCoVarNames            int64 `offsetof:"PyCodeObject.co_varnames"`
 	PyCodeObjectCoFirstlineno         int64 `offsetof:"PyCodeObject.co_firstlineno"`
 	PyTupleObjectObItem               int64 `offsetof:"PyTupleObject.ob_item"`
 }
@@ -380,7 +379,7 @@ func (p python312) Layout() runtimedata.RuntimeData {
 		PyCodeObject: PyCodeObject{
 			CoFilename:    p.PyCodeObjectCoFilename,
 			CoName:        p.PyCodeObjectCoName,
-			CoVarnames:    p.PyCodeObjectCoVarNames,
+			CoVarnames:    doesNotExist,
 			CoFirstlineno: p.PyCodeObjectCoFirstlineno,
 		},
 		PyTupleObject: PyTupleObject{
@@ -412,7 +411,6 @@ type python313 struct {
 	PyCodeObjectCoFilename            int64 `offsetof:"PyCodeObject.co_filename"`
 	PyCodeObjectCoName                int64 `offsetof:"PyCodeObject.co_name"`
 	PyCodeObjectCoFirstlineno         int64 `offsetof:"PyCodeObject.co_firstlineno"`
-	PyCodeObjectCoVarNames            int64 `offsetof:"PyCodeObject.co_varnames"`
 	PyTupleObjectObItem               int64 `offsetof:"PyTupleObject.ob_item"`
 }
 
@@ -454,7 +452,7 @@ func (p python313) Layout() runtimedata.RuntimeData {
 		PyCodeObject: PyCodeObject{
 			CoFilename:    p.PyCodeObjectCoFilename,
 			CoName:        p.PyCodeObjectCoName,
-			CoVarnames:    p.PyCodeObjectCoVarNames,
+			CoVarnames:    doesNotExist,
 			CoFirstlineno: p.PyCodeObjectCoFirstlineno,
 		},
 		PyTupleObject: PyTupleObject{

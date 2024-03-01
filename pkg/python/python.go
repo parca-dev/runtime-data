@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/parca-dev/runtime-data/pkg/runtimedata"
 	"gopkg.in/yaml.v3"
 )
 
@@ -29,18 +30,13 @@ const (
 	initialStateDir = "initialstate"
 )
 
-type Key struct {
-	Index      int
-	Constraint string
-}
-
 var (
 	//go:embed layout/*/*.yaml
 	generatedLayouts embed.FS
 	//go:embed initialstate/*/*.yaml
 	generatedState embed.FS
 
-	structLayouts = map[Key]*Layout{}
+	structLayouts = map[runtimedata.Key]runtimedata.RuntimeData{}
 	once          = &sync.Once{}
 )
 
@@ -52,7 +48,7 @@ func init() {
 	}
 }
 
-func loadLayouts() (map[Key]*Layout, error) {
+func loadLayouts() (map[runtimedata.Key]runtimedata.RuntimeData, error) {
 	var err error
 	once.Do(func() {
 		entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, runtime.GOARCH))
@@ -83,7 +79,7 @@ func loadLayouts() (map[Key]*Layout, error) {
 			if err != nil {
 				return
 			}
-			key := Key{Index: i, Constraint: constr.String()}
+			key := runtimedata.Key{Index: i, Constraint: constr.String()}
 			structLayouts[key] = &lyt
 			i++
 		}
@@ -91,10 +87,10 @@ func loadLayouts() (map[Key]*Layout, error) {
 	return structLayouts, err
 }
 
-func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
+func getLayoutForArch(v *semver.Version, arch string) (runtimedata.Key, *Layout, error) {
 	entries, err := generatedLayouts.ReadDir(filepath.Join(layoutDir, arch))
 	if err != nil {
-		return Key{}, nil, err
+		return runtimedata.Key{}, nil, err
 	}
 	var i int
 	for _, entry := range entries {
@@ -104,7 +100,7 @@ func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
 		var data []byte
 		data, err = generatedLayouts.ReadFile(filepath.Join(layoutDir, arch, entry.Name()))
 		if err != nil {
-			return Key{}, nil, err
+			return runtimedata.Key{}, nil, err
 		}
 		ext := filepath.Ext(entry.Name())
 		// Filter out non-yaml files.
@@ -113,27 +109,27 @@ func getLayoutForArch(v *semver.Version, arch string) (Key, *Layout, error) {
 		}
 		var lyt Layout
 		if err = yaml.Unmarshal(data, &lyt); err != nil {
-			return Key{}, nil, err
+			return runtimedata.Key{}, nil, err
 		}
 		rawConstraint := strings.TrimSuffix(entry.Name(), ext)
 		constr, err := semver.NewConstraint(rawConstraint)
 		if err != nil {
-			return Key{}, nil, err
+			return runtimedata.Key{}, nil, err
 		}
 		if constr.Check(v) {
-			key := Key{Index: i, Constraint: constr.String()}
+			key := runtimedata.Key{Index: i, Constraint: constr.String()}
 			return key, &lyt, nil
 		}
 		i++
 	}
-	return Key{}, nil, errors.New("not found")
+	return runtimedata.Key{}, nil, errors.New("not found")
 }
 
 // GetLayout returns the matching layout for the given version.
-func GetLayout(v *semver.Version) (Key, *Layout, error) {
+func GetLayout(v *semver.Version) (runtimedata.Key, runtimedata.RuntimeData, error) {
 	layouts, err := loadLayouts()
 	if err != nil {
-		return Key{}, nil, err
+		return runtimedata.Key{}, nil, err
 	}
 	for k, l := range layouts {
 		constr, err := semver.NewConstraint(k.Constraint)
@@ -144,11 +140,11 @@ func GetLayout(v *semver.Version) (Key, *Layout, error) {
 			return k, l, nil
 		}
 	}
-	return Key{}, nil, errors.New("not found")
+	return runtimedata.Key{}, nil, errors.New("not found")
 }
 
 // GetLayouts returns all the layouts for the supported versions.
-func GetLayouts() (map[Key]*Layout, error) {
+func GetLayouts() (map[runtimedata.Key]runtimedata.RuntimeData, error) {
 	layouts, err := loadLayouts()
 	if err != nil {
 		return nil, err
@@ -157,12 +153,12 @@ func GetLayouts() (map[Key]*Layout, error) {
 }
 
 // loadInitialState loads the initial state for the supported versions.
-func loadInitialState() (map[Key]*InitialState, error) {
+func loadInitialState() (map[runtimedata.Key]*InitialState, error) {
 	entries, err := generatedState.ReadDir(filepath.Join(initialStateDir, runtime.GOARCH))
 	if err != nil {
 		return nil, err
 	}
-	initialStates := map[Key]*InitialState{}
+	initialStates := map[runtimedata.Key]*InitialState{}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -185,16 +181,16 @@ func loadInitialState() (map[Key]*InitialState, error) {
 		if err != nil {
 			return nil, err
 		}
-		key := Key{Constraint: constr.String()}
+		key := runtimedata.Key{Constraint: constr.String()}
 		initialStates[key] = &initState
 	}
 	return initialStates, nil
 }
 
-func GetInitialStateForArch(v *semver.Version, arch string) (Key, *InitialState, error) {
+func GetInitialStateForArch(v *semver.Version, arch string) (runtimedata.Key, *InitialState, error) {
 	entries, err := generatedState.ReadDir(filepath.Join(initialStateDir, arch))
 	if err != nil {
-		return Key{}, nil, err
+		return runtimedata.Key{}, nil, err
 	}
 	for _, entry := range entries {
 		if entry.IsDir() {
@@ -202,7 +198,7 @@ func GetInitialStateForArch(v *semver.Version, arch string) (Key, *InitialState,
 		}
 		data, err := generatedState.ReadFile(filepath.Join(initialStateDir, arch, entry.Name()))
 		if err != nil {
-			return Key{}, nil, err
+			return runtimedata.Key{}, nil, err
 		}
 		ext := filepath.Ext(entry.Name())
 		// Filter out non-yaml files.
@@ -211,26 +207,26 @@ func GetInitialStateForArch(v *semver.Version, arch string) (Key, *InitialState,
 		}
 		var initState InitialState
 		if err := yaml.Unmarshal(data, &initState); err != nil {
-			return Key{}, nil, err
+			return runtimedata.Key{}, nil, err
 		}
 		rawConstraint := strings.TrimSuffix(entry.Name(), ext)
 		constr, err := semver.NewConstraint(rawConstraint)
 		if err != nil {
-			return Key{}, nil, err
+			return runtimedata.Key{}, nil, err
 		}
 		if constr.Check(v) {
-			key := Key{Constraint: constr.String()}
+			key := runtimedata.Key{Constraint: constr.String()}
 			return key, &initState, nil
 		}
 	}
-	return Key{}, nil, errors.New("not found")
+	return runtimedata.Key{}, nil, errors.New("not found")
 }
 
 // GetInitialState returns the initial state for the given version.
-func GetInitialState(v *semver.Version) (Key, *InitialState, error) {
+func GetInitialState(v *semver.Version) (runtimedata.Key, *InitialState, error) {
 	state, err := loadInitialState()
 	if err != nil {
-		return Key{}, nil, err
+		return runtimedata.Key{}, nil, err
 	}
 	for k, l := range state {
 		constr, err := semver.NewConstraint(k.Constraint)
@@ -241,10 +237,10 @@ func GetInitialState(v *semver.Version) (Key, *InitialState, error) {
 			return k, l, nil
 		}
 	}
-	return Key{}, nil, errors.New("not found")
+	return runtimedata.Key{}, nil, errors.New("not found")
 }
 
 // GetInitialStates returns all the initial states for the supported versions.
-func GetInitialStates() (map[Key]*InitialState, error) {
+func GetInitialStates() (map[runtimedata.Key]*InitialState, error) {
 	return loadInitialState()
 }

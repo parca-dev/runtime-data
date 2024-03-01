@@ -1,7 +1,6 @@
 package main
 
 import (
-	"debug/dwarf"
 	"debug/elf"
 	"flag"
 	"fmt"
@@ -14,6 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/parca-dev/runtime-data/pkg/datamap"
+	"github.com/parca-dev/runtime-data/pkg/java/openjdk"
 	"github.com/parca-dev/runtime-data/pkg/libc/glibc"
 	"github.com/parca-dev/runtime-data/pkg/libc/musl"
 	"github.com/parca-dev/runtime-data/pkg/python"
@@ -88,21 +88,27 @@ func main() {
 		if outputDir == "" {
 			outputDir = "pkg/libc/musl/layout"
 		}
+	case "java":
+		layoutMap = openjdk.DataMapForLayout(version)
+		if outputDir == "" {
+			outputDir = "pkg/openjdk"
+		}
 	default:
 		logger.Error("invalid offset map module", "mod", runtime)
 		os.Exit(1)
 	}
 
 	input := fSet.Arg(0)
-	dwarfData, err := dwarfDataFromELF(input)
+	ef, err := elf.Open(input)
 	if err != nil {
 		logger.Error("failed to read DWARF data", "err", err)
 		os.Exit(1)
 	}
+	defer ef.Close()
 
 	if !isNil(layoutMap) {
 		output := filepath.Join(outputDir, "layout", fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
-		if err := processAndWriteLayout(dwarfData, output, version, layoutMap); err != nil {
+		if err := processAndWriteLayout(ef, output, version, layoutMap); err != nil {
 			logger.Error("failed to write layout", "err", err)
 			os.Exit(1)
 		}
@@ -117,7 +123,7 @@ func main() {
 	}
 
 	output := filepath.Join(outputDir, "initialstate", fmt.Sprintf("%s_%s.yaml", runtime, sanitizeIdentifier(version)))
-	if err := processAndWriteInitialState(dwarfData, output, version, initialStateMap); err != nil {
+	if err := processAndWriteInitialState(ef, output, version, initialStateMap); err != nil {
 		logger.Error("failed to write initial state", "err", err)
 		os.Exit(1)
 	}
@@ -125,13 +131,13 @@ func main() {
 }
 
 // processAndWriteLayout processes the given ELF file and writes the layout to the given output file.
-func processAndWriteLayout(dwarfData *dwarf.Data, output string, version string, layoutMap runtimedata.LayoutMap) error {
+func processAndWriteLayout(ef *elf.File, output string, version string, layoutMap runtimedata.LayoutMap) error {
 	dm, err := datamap.New(layoutMap)
 	if err != nil {
 		return fmt.Errorf("failed to create data map: %w", err)
 	}
 
-	if err := dm.ReadFromDWARF(dwarfData); err != nil {
+	if err := dm.ReadFromDWARF(ef); err != nil {
 		return fmt.Errorf("failed to extract struct layout from DWARF data: %w", err)
 	}
 
@@ -162,13 +168,13 @@ func processAndWriteLayout(dwarfData *dwarf.Data, output string, version string,
 }
 
 // processAndWriteInitialState processes the given ELF file and writes the initial state to the given output file.
-func processAndWriteInitialState(dwarfData *dwarf.Data, output string, version string, initialStateMap runtimedata.InitialStateMap) error {
+func processAndWriteInitialState(ef *elf.File, output string, version string, initialStateMap runtimedata.InitialStateMap) error {
 	dm, err := datamap.New(initialStateMap)
 	if err != nil {
 		return fmt.Errorf("failed to create data map: %w", err)
 	}
 
-	if err := dm.ReadFromDWARF(dwarfData); err != nil {
+	if err := dm.ReadFromDWARF(ef); err != nil {
 		return fmt.Errorf("failed to extract struct layout from DWARF data: %w", err)
 	}
 
@@ -196,22 +202,6 @@ func processAndWriteInitialState(dwarfData *dwarf.Data, output string, version s
 	}
 
 	return nil
-}
-
-// dwarfDataFromELF returns the DWARF data from the given ELF file.
-func dwarfDataFromELF(input string) (*dwarf.Data, error) {
-	ef, err := elf.Open(input)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open ELF file: %w", err)
-	}
-	defer ef.Close()
-
-	dwarfData, err := ef.DWARF()
-	if err != nil {
-		return nil, fmt.Errorf("failed to read DWARF info: %w", err)
-	}
-
-	return dwarfData, nil
 }
 
 // sanitizeIdentifier sanitizes the identifier to be used as a filename.

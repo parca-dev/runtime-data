@@ -33,6 +33,7 @@ var pythonVersions = []string{
 	"3.9.5",
 	"3.10.0",
 	"3.11.0",
+	"3.12.0",
 }
 
 func TestPythonIntegration(t *testing.T) {
@@ -69,13 +70,11 @@ func TestPythonIntegration(t *testing.T) {
 			if err != nil {
 				t.Fatalf("elf.Open() = %v", err)
 			}
+			t.Cleanup(func() {
+				f.Close()
+			})
 
-			dwarfData, err := f.DWARF()
-			if err != nil {
-				t.Fatalf("f.DWARF() = %v", err)
-			}
-
-			if err := dm.ReadFromDWARF(dwarfData); err != nil {
+			if err := dm.ReadFromDWARF(f); err != nil {
 				t.Errorf("input: %s", input)
 				t.Fatalf("datamap.ReadFromDWARF() = %v", err)
 			}

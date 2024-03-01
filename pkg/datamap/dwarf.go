@@ -276,16 +276,6 @@ func attrs(entry *dwarf.Entry) map[dwarf.Attr]any {
 	return attrs
 }
 
-func printAttrs(attrs map[dwarf.Attr]any) {
-	for k, v := range attrs {
-		fmt.Printf("%s: %v\n", k, v)
-	}
-}
-
-func printEntryAttrs(entry *dwarf.Entry) {
-	printAttrs(attrs(entry))
-}
-
 func nameAttr(attrs map[dwarf.Attr]any) string {
 	nameAttr, ok := attrs[dwarf.AttrName]
 	if !ok {

@@ -4,7 +4,7 @@ py_code_object:
     co_filename: 112
     co_firstlineno: 68
     co_name: 120
-    co_varnames: 0
+    co_varnames: -1
 py_frame_object:
     f_back: 8
     f_code: 0

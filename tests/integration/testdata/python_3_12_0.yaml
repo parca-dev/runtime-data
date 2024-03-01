@@ -3,7 +3,7 @@ py_cframe:
 py_code_object:
   co_filename: 112
   co_name: 120
-  co_varnames: -1
+  co_varnames: 0
   co_firstlineno: 68
 py_frame_object:
   f_back: 8

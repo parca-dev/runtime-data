@@ -379,7 +379,7 @@ func (p python312) Layout() runtimedata.RuntimeData {
 		PyCodeObject: PyCodeObject{
 			CoFilename:    p.PyCodeObjectCoFilename,
 			CoName:        p.PyCodeObjectCoName,
-			CoVarnames:    doesNotExist,
+			CoVarnames:    0,
 			CoFirstlineno: p.PyCodeObjectCoFirstlineno,
 		},
 		PyTupleObject: PyTupleObject{
@@ -452,7 +452,7 @@ func (p python313) Layout() runtimedata.RuntimeData {
 		PyCodeObject: PyCodeObject{
 			CoFilename:    p.PyCodeObjectCoFilename,
 			CoName:        p.PyCodeObjectCoName,
-			CoVarnames:    doesNotExist,
+			CoVarnames:    0,
 			CoFirstlineno: p.PyCodeObjectCoFirstlineno,
 		},
 		PyTupleObject: PyTupleObject{

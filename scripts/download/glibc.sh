@@ -28,6 +28,10 @@ PACKAGE_NAME=${PACKAGE_NAME:-libc6}
 ./debdownload -u 'http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/' -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}"
 ./debdownload -u 'http://old-releases.ubuntu.com/ubuntu/pool/main/g/glibc/' -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}"
 
+# 2.35 for arm64 is not available the archives above, so we need to download it separately.
+./debdownload -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}" -s http://launchpadlibrarian.net/707340001/libc6_2.35-0ubuntu3.6_arm64.deb
+./debdownload -t "${PACKAGE_DIR}" -o "${BIN_DIR}" -p "${PACKAGE_NAME}" -s http://launchpadlibrarian.net/707339998/libc6-dbg_2.35-0ubuntu3.6_arm64.deb
+
 convertArch() {
     case $1 in
     amd64)
@@ -39,7 +43,7 @@ convertArch() {
     esac
 }
 
-echo "Extracting debuginfo from $BIN_DIR/$PACKAGE_NAME"
+echo "Copying debuginfo from $BIN_DIR/$PACKAGE_NAME"
 for arch in $BIN_DIR/$PACKAGE_NAME/*; do
     for version in $arch/*; do
         for variant in $version/*; do

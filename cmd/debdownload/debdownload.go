@@ -68,6 +68,7 @@ func main() {
 		architectures     = fSet.StringList('a', "arch", "architectures to download")
 		versionConstraint = fSet.String('c', "constraint", "", "version constraints to download")
 		variant           = fSet.StringList('v', "variants", "variants of the package to download")
+		singleTarget      = fSet.String('s', "single-target", "", "single target to download")
 	)
 	if err := ff.Parse(fSet, os.Args[1:]); err != nil {
 		fmt.Printf("%s\n", ffhelp.Flags(fSet))
@@ -85,10 +86,6 @@ func main() {
 
 	if *tempDir == "" {
 		*tempDir = os.TempDir()
-	}
-
-	if *url == "" {
-		*url = DefaultBaseURL
 	}
 
 	if *pkgName == "" {
@@ -122,10 +119,27 @@ func main() {
 		}
 	}
 
-	packages, err := cli.list(ctx, *url, *pkgName, *architectures, *versionConstraint, variants)
-	if err != nil {
-		logger.Error("failed to list packages", "err", err)
-		os.Exit(1)
+	var (
+		packages []*pkg
+		err      error
+	)
+	if *singleTarget != "" {
+		p, err := cli.processPackageLink(*url, *pkgName, *architectures, *versionConstraint, variants, *singleTarget)
+		if err != nil {
+			logger.Error("failed to process package link", "err", err)
+			os.Exit(1)
+		}
+		packages = append(packages, p)
+	} else {
+		if *url == "" {
+			*url = DefaultBaseURL
+		}
+
+		packages, err = cli.list(ctx, *url, *pkgName, *architectures, *versionConstraint, variants)
+		if err != nil {
+			logger.Error("failed to list packages", "err", err)
+			os.Exit(1)
+		}
 	}
 
 	interimDir := filepath.Join(*tempDir, *pkgName)
@@ -205,6 +219,49 @@ func (c *cli) list(
 		return nil, fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
+	packages := map[string]*pkg{}
+	key := func(p *pkg) string {
+		return strings.Join([]string{p.name, p.variant, shortVersion(p.version), p.arch}, "-")
+	}
+
+	var process func(*html.Node)
+	process = func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "a" {
+			for _, a := range n.Attr {
+				if a.Key == "href" {
+					p, err := c.processPackageLink(pkgUrl, pkgName, architectures, versionConstraint, variants, a.Val)
+					if err != nil {
+						c.logger.Info("failed to process package link", "err", err)
+						continue
+					}
+					if oldPkg, ok := packages[key(p)]; ok {
+						if p.version.GreaterThan(oldPkg.version) {
+							c.logger.Info("found newer version", "old", oldPkg.version, "new", p.version)
+							packages[key(p)] = p
+						}
+						continue
+					}
+
+					packages[key(p)] = p
+				}
+			}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			process(c)
+		}
+	}
+	process(doc)
+	return maps.Values(packages), nil
+}
+
+func (c *cli) processPackageLink(
+	pkgUrl, pkgName string,
+	architectures []string,
+	versionConstraint string,
+	variants map[string]struct{},
+	link string,
+) (*pkg, error) {
+
 	var matcher *regexp.Regexp
 	switch c.sv {
 	case debian:
@@ -220,65 +277,46 @@ func (c *cli) list(
 	}
 	c.logger.Info("matcher", "pattern", matcher.String())
 
-	packages := map[string]*pkg{}
-	key := func(p *pkg) string {
-		return strings.Join([]string{p.name, p.variant, shortVersion(p.version), p.arch}, "-")
-	}
-
-	var process func(*html.Node)
-	process = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "a" {
-			for _, a := range n.Attr {
-				if a.Key == "href" {
-					if matches := matcher.FindStringSubmatch(a.Val); len(matches) > 0 {
-						v := strings.ReplaceAll(matches[3], "~", "+")
-						c.logger.Info("found package", "version", v, "arch", matches[4], "variant", matches[2])
-						version, err := semver.NewVersion(v)
-						if err != nil {
-							c.logger.Info("failed to parse version", "version", v, "err", err)
-							continue
-						}
-						if versionConstraint != "" {
-							match, reasons := mustConstraint(semver.NewConstraint(versionConstraint)).Validate(version)
-							if !match {
-								c.logger.Info("version does not match", "version", version, "reasons", reasons)
-								c.logger.Info("see: https://github.com/Masterminds/semver?tab=readme-ov-file#checking-version-constraints")
-								continue
-							}
-						}
-						variant := strings.TrimPrefix(matches[2], "-")
-						if variant != "" {
-							variant = strings.TrimSpace(variant)
-							if _, ok := variants[variant]; !ok {
-								continue
-							}
-						}
-						p := &pkg{
-							link:    must(url.JoinPath(pkgUrl, a.Val)),
-							name:    matches[1],
-							variant: variant,
-							version: version,
-							arch:    matches[4],
-						}
-						if oldPkg, ok := packages[key(p)]; ok {
-							if p.version.GreaterThan(oldPkg.version) {
-								c.logger.Info("found newer version", "old", oldPkg.version, "new", p.version)
-								packages[key(p)] = p
-							}
-							continue
-						}
-
-						packages[key(p)] = p
-					}
-				}
+	if matches := matcher.FindStringSubmatch(link); len(matches) > 0 {
+		v := strings.ReplaceAll(matches[3], "~", "+")
+		c.logger.Info("found package", "version", v, "arch", matches[4], "variant", matches[2])
+		version, err := semver.NewVersion(v)
+		if err != nil {
+			c.logger.Info("failed to parse version", "version", v, "err", err)
+			return nil, fmt.Errorf("failed to parse version: %w", err)
+		}
+		if versionConstraint != "" {
+			match, reasons := mustConstraint(semver.NewConstraint(versionConstraint)).Validate(version)
+			if !match {
+				c.logger.Info("version does not match", "version", version, "reasons", reasons)
+				c.logger.Info("see: https://github.com/Masterminds/semver?tab=readme-ov-file#checking-version-constraints")
+				return nil, fmt.Errorf("version does not match: %s", version)
 			}
 		}
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			process(c)
+		variant := strings.TrimPrefix(matches[2], "-")
+		if variant != "" {
+			variant = strings.TrimSpace(variant)
+			if _, ok := variants[variant]; !ok {
+				return nil, fmt.Errorf("variant not allowed: %s", variant)
+			}
 		}
+		var pLink string
+		if pkgUrl != "" {
+			pLink = must(url.JoinPath(pkgUrl, link))
+		} else {
+			pLink = link
+		}
+		p := &pkg{
+			link:    pLink,
+			name:    matches[1],
+			variant: variant,
+			version: version,
+			arch:    matches[4],
+		}
+		return p, nil
 	}
-	process(doc)
-	return maps.Values(packages), nil
+
+	return nil, fmt.Errorf("failed to match package link: %s", link)
 }
 
 func shortVersion(v *semver.Version) string {

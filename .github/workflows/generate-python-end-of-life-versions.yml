@@ -141,8 +141,8 @@ jobs:
               arm64
           )
 
-          rm -rf pkg/python/layout
-          rm -rf pkg/python/initialstate
+          find pkg/python/layout/*/ -name "2.*.yaml" -delete -o -name "3.[0-7].*.yaml" -delete
+          find pkg/python/initialstate/*/ -name "2.*.yaml" -delete -o -name "3.[0-7].*.yaml" -delete
           for arch in "${target_archs[@]}"; do
               mkdir -p pkg/python/layout/"${arch}"
               ./mergelayout -o pkg/python/layout/"${arch}" offsets-python/"${arch}"/layout/python_*.yaml

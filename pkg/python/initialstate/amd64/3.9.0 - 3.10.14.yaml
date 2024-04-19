@@ -1,6 +1,0 @@
-auto_tss_key: 584
-interpreter_head: 32
-tss:
-    key: 4
-    size: 8
-tstate_current: 568

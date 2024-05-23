@@ -44,6 +44,7 @@ alpine_versions=(
     v3.17
     v3.18
     v3.19
+    v3.20
 )
 
 convertArch() {
